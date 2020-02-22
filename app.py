@@ -4,7 +4,7 @@ import datetime as dt
 
 app = Flask(__name__)
 
-@app.route('/getStockInfo/', methods=['GET'])
+@app.route('/getstockinfo/', methods=['GET'])
 def respond():
     # Retrieve the name from url parameter
     ticker = request.args.get("Stock")

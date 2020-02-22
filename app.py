@@ -41,6 +41,7 @@ def post_something():
             "ERROR": "no name found, please send a name."
         })
 
+
 # A welcome message to test our server
 @app.route('/')
 def index():

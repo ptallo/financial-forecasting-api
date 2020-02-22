@@ -11,7 +11,7 @@ def respond():
     # Retrieve the name from url parameter
     ticker = request.args.get("Stock", type=str)
     raw_start = request.args.get("Start", type=str)
-    raw_end = request.args.get("Start", type=str)
+    raw_end = request.args.get("End", type=str)
 
     raw_start = "2019-5-1"
     raw_end = "2019-5-8"

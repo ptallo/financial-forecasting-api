@@ -1,5 +1,6 @@
 # app.py
 from flask import Flask, request, jsonify
+from iexfinance.stocks import *
 import datetime as dt
 
 app = Flask(__name__)
@@ -7,11 +8,22 @@ app = Flask(__name__)
 @app.route('/getstockinfo/', methods=['GET'])
 def respond():
     # Retrieve the name from url parameter
-    ticker = request.args.get("Stock")
-    startDate = request.args.get("Start")
-    endDate = request.args.get("Start")
+    ticker = request.args.get("Stock", type=str)
+    start_date = request.args.get("Start", type=str)
+    end_date = request.args.get("Start", type=str)
+
+    sl = [int(x) for x in str.split(start_date, "-")]
+    el = [int(x) for x in str.split(end_date, "-")]
+
+    start_date = dt.datetime(sl[0], sl[1], sl[2])
+    end_date = dt.datetime(el[0], el[1], el[2])
+
+    data = get_historical_data(ticker, start_date, end_date)
+
 
     response = {}
+
+    s = Stock("TSLA")
 
     dates = [dt.date(2018, 5, 1),
              dt.date(2018, 5, 2),

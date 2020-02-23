@@ -76,12 +76,12 @@ def generate_auth_token(username):
     return database_functions.encode(thing_to_hash), dt.now()
 
 def check_auth(auth_token):
-    tokens_to_remove = []
-    for token, time in AUTH_TOKENS.items():
-        if (time - dt.now()).seconds > 1800:
-            tokens_to_remove.append(token)
-    for token in tokens_to_remove:
-        del AUTH_TOKENS[token]
+    # tokens_to_remove = []
+    # for token, time in AUTH_TOKENS.items():
+    #     if (time - dt.now()).seconds > 1800:
+    #         tokens_to_remove.append(token)
+    # for token in tokens_to_remove:
+    #     del AUTH_TOKENS[token]
     if auth_token in AUTH_TOKENS:
         return True
     return False    

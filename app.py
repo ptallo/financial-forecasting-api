@@ -1,21 +1,22 @@
 # app.py
-from flask import Flask, request, jsonify, flash
-from flask_login import current_user, login_user, LoginManager
-from flask_httpauth import HTTPAuth
+from flask import Flask, request, jsonify, flash, abort
 from flask_cors import *
+
 from iexfinance.stocks import *
 from datetime import datetime as dt
-from user import User as user
+import random
+import database_functions
 
 app = Flask(__name__)
-auth = HTTPAuth()
-login_manager = LoginManager()
 app.secret_key = "USSR_SUPPER_SEKRET_KEZ"
-login_manager.init_app(app)
+
 CORS(app, origins='*')
+
+AUTH_TOKENS = {}
 
 @app.route('/getstockinfo/', methods=['GET'])
 def respond():
+    # TODO : get auth token here and check
     # Retrieve the name from url parameter
     ticker = request.args.get("stock", type=str)
     raw_start = request.args.get("start", type=str)
@@ -43,39 +44,46 @@ def respond():
     return jsonify(response)
 
 
-@app.route('/login/', methods=['GET', 'POST'])
+@app.route('/signup', methods=['POST'])
+def signup():
+    username = request.json.get('username')
+    password = request.json.get('password')
+    status, message = database_functions.insert_user(username, password)
+    return message, status
+
+@app.route('/login', methods=['GET'])
 def login():
-    user_name = auth.username()
-    pw = auth.get_password(user_name)
-    usr = user(user_name, pw)
-
-    if current_user.is_authenticated:
-        flash("USER LOGGED IN ALREADY")
-        flash("USER LOGGED IN ALREADY")
-
-    if usr.is_authenticated:
-        flash("Login Successful")
-        print("Login Successful")
-        login_user(usr)
+    username = request.json.get('username')
+    password = request.json.get('password')
+    should_auth_user = database_functions.auth_user(username, password)
+    if should_auth_user:
+        auth_token, auth_time = generate_auth_token(username)
+        AUTH_TOKENS[auth_token] = auth_time
+        response_dict = {
+            "token": auth_token,
+            "time": auth_time
+        }
+        return jsonify(response_dict)
     else:
-        flash("Incorrect username and password!")
-        print("Incorrect username and password!")
+        abort(400)
 
-    return "Hello"
+def generate_auth_token(username):
+    thing_to_hash = 'username{}'.format(random.randint(0, 20))
+    return database_functions.encode(thing_to_hash), dt.now()
 
-@login_manager.user_loader
-def load_user(user_id):
-    return user.get_id(user_id)
+def check_auth(auth_token):
+    tokens_to_remove = []
+    for token, time in AUTH_TOKENS.items():
+        if (time - dt.now()).seconds > 1800:
+            tokens_to_remove.append(token)
+    for token in tokens_to_remove:
+        del AUTH_TOKENS[token]
+    if auth_token in AUTH_TOKENS:
+        return True
+    return False    
 
-# A welcome message to test our server
-@app.route('/')
-def index():
-    return "<h1>Welcome to our server !!</h1>"
 
 
 if __name__ == '__main__':
-    # Threaded option to enable multiple instances for multiple user access support
     app.run(threaded=True, port=5000)
-
-
 

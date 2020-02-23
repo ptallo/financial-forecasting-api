@@ -2,9 +2,10 @@
 from flask import Flask, request, jsonify, flash, abort
 from flask_cors import *
 
-from iexfinance.stocks import *
 from datetime import datetime as dt
 import random
+import requests
+
 import database_functions
 
 app = Flask(__name__)
@@ -37,12 +38,14 @@ def respond():
     end_date = dt(el[0], el[1], el[2])
 
     # Grab data from stock (ticker) from last end_date-start_date days
-    data = get_historical_data(ticker, start_date, end_date)
+    # data = get_historical_data(ticker, start_date, end_date)
+    data = requests.get("https://sandbox.iexapis.com/stable/stock/{}/chart/3m?token={}".format(ticker, "Tsk_942768a24d244db38c7a44e32e3bc000"))
 
     # Extract date keys from historical data
-    vals = [data[key]["close"] for key in data.keys()]
+    vals = [x['close'] for x in data]
+    dates = [x['date'] for x in data]
     # Put Dates and Close values into response
-    response = {"x": list(data.keys()), "y": [vals], "names": ["actual"]}
+    response = {"x": dates, "y": [vals], "names": ["actual"]}
 
     # Return the response in json format
     return jsonify(response)

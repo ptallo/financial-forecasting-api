@@ -12,7 +12,6 @@ auth = HTTPAuth()
 login_manager = LoginManager()
 app.secret_key = "USSR_SUPPER_SEKRET_KEZ"
 login_manager.init_app(app)
-app.run(threaded=True, port=5000)
 CORS(app, origins='*')
 
 @app.route('/getstockinfo/', methods=['GET'])
@@ -74,7 +73,9 @@ def index():
     return "<h1>Welcome to our server !!</h1>"
 
 
-# if __name__ == '__main__':
-#     # Threaded option to enable multiple instances for multiple user access support
+if __name__ == '__main__':
+    # Threaded option to enable multiple instances for multiple user access support
+    app.run(threaded=True, port=5000)
+
 
 

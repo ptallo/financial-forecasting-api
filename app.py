@@ -9,9 +9,9 @@ app = Flask(__name__)
 @app.route('/getstockinfo/', methods=['GET'])
 def respond():
     # Retrieve the name from url parameter
-    ticker = request.args.get("Stock", type=str)
-    raw_start = request.args.get("Start", type=str)
-    raw_end = request.args.get("End", type=str)
+    ticker = request.args.get("stock", type=str)
+    raw_start = request.args.get("start", type=str)
+    raw_end = request.args.get("end", type=str)
 
     # List comprehension to make start date
     sl = [int(x) for x in str.split(raw_start, "-")]

@@ -1,12 +1,18 @@
 # app.py
-from flask import Flask, request, jsonify
-import flask_login
+from flask import Flask, request, jsonify, flash
+from flask_login import current_user, login_user, LoginManager
+from flask_httpauth import HTTPAuth
 from flask_cors import *
 from iexfinance.stocks import *
 from datetime import datetime as dt
+from user import User as user
 
 app = Flask(__name__)
-login_manager = flask_login.LoginManager()
+auth = HTTPAuth()
+login_manager = LoginManager()
+app.secret_key = "USSR_SUPPER_SEKRET_KEZ"
+login_manager.init_app(app)
+app.run(threaded=True, port=5000)
 CORS(app, origins='*')
 
 
@@ -39,46 +45,29 @@ def respond():
     return jsonify(response)
 
 
-@app.route('/login', methods=['GET', 'POST'])
+@app.route('/login/', methods=['GET', 'POST'])
 def login():
-    # Here we use a class of some kind to represent and validate our
-    # client-side form data. For example, WTForms is a library that will
-    # handle this for us, and we use a custom LoginForm to validate.
-    form = flask_login.LoginForm()
-    if form.validate_on_submit():
-        # Login and validate the user.
-        # user should be an instance of your `User` class
-        flask_login.login_user(user)
+    user_name = auth.username()
+    pw = auth.get_password(user_name)
+    usr = user(user_name, pw)
 
-        flask.flash('Logged in successfully.')
+    if current_user.is_authenticated:
+        flash("USER LOGGED IN ALREADY")
+        flash("USER LOGGED IN ALREADY")
 
-        next = flask.request.args.get('next')
-        # is_safe_url should check if the url is safe for redirects.
-        # See http://flask.pocoo.org/snippets/62/ for an example.
-        if not is_safe_url(next):
-            return flask.abort(400)
+    if usr.is_authenticated:
+        flash("Login Successful")
+        print("Login Successful")
+        login_user(usr)
+    else:
+        flash("Incorrect username and password!")
+        print("Incorrect username and password!")
 
-        return flask.redirect(next or flask.url_for('index'))
-    return flask.render_template('login.html', form=form)
+    return "Hello"
 
-
-@app.route('/post/', methods=['POST'])
-def post_something():
-
-    # param = request.form.get('name')
-    # print(param)
-    # # You can add the test cases you made in the previous function, but in our case here you are just testing the POST functionality
-    # if param:
-    #     return jsonify({
-    #         "Message": f"Welcome {name} to our awesome platform!!",
-    #         # Add this option to distinct the POST request
-    #         "METHOD": "POST"
-    #     })
-    # else:
-    #     return jsonify({
-    #         "ERROR": "no name found, please send a name."
-    #     })
-
+@login_manager.user_loader
+def load_user(user_id):
+    return user.get_id(user_id)
 
 # A welcome message to test our server
 @app.route('/')
@@ -86,6 +75,7 @@ def index():
     return "<h1>Welcome to our server !!</h1>"
 
 
-if __name__ == '__main__':
-    # Threaded option to enable multiple instances for multiple user access support
-    app.run(threaded=True, port=5000)
+# if __name__ == '__main__':
+#     # Threaded option to enable multiple instances for multiple user access support
+
+

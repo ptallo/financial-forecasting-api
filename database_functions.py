@@ -4,6 +4,8 @@ from datetime import date as date
 import hashlib
 import time
 
+DEBUG = 0
+
 def get_conn():
     # Establish Connection
     # TODO Remove timer

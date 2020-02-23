@@ -1,29 +1,22 @@
-import hashlib
-import database_functions as df
+from database_functions import insert_user, delete_user, auth_user, change_password
+from flask_login import UserMixin
 
+class User():
+    def __init__(self, username, password):
+        self.username = username
+        self.password = password
 
-class User(object):
-
-    def __init__(self, user_name, password):
-        self.user_name = user_name
-        m = hashlib.sha256()
-        m.update(bytes(password, 'utf8'))
-        self.password = m.hexdigest()
-
-    @property
     def is_active(self):
-        return df.auth_user(self.user_name, self.password)
+        return self.is_authenticated()
 
-    @property
     def is_authenticated(self):
-        return df.auth_user(self.user_name, self.password)
+        return auth_user(self.username, self.password)
 
-    @property
     def is_anonymous(self):
         return False
 
     def get_id(self):
         try:
-            return self.user_name
+            return self.username.decode("utf-8")
         except AttributeError:
             raise NotImplementedError('No `id` attribute - override `get_id`')

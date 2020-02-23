@@ -1,18 +1,19 @@
 # app.py
-from flask import Flask, request, jsonify, flash
-from flask_login import current_user, login_user, LoginManager
-from flask_httpauth import HTTPAuth
+from flask import Flask, request, jsonify, flash, abort
 from flask_cors import *
+from flask_login import LoginManager
+
+
 from iexfinance.stocks import *
 from datetime import datetime as dt
-from user import User as user
+from database_functions import auth_user, insert_user
 
 app = Flask(__name__)
-auth = HTTPAuth()
-login_manager = LoginManager()
 app.secret_key = "USSR_SUPPER_SEKRET_KEZ"
+
+login_manager = LoginManager()
 login_manager.init_app(app)
-app.run(threaded=True, port=5000)
+
 CORS(app, origins='*')
 
 
@@ -45,37 +46,33 @@ def respond():
     return jsonify(response)
 
 
-@app.route('/login/', methods=['GET', 'POST'])
+@app.route('/login', methods=['GET', 'POST'])
 def login():
-    user_name = auth.username()
-    pw = auth.get_password(user_name)
-    usr = user(user_name, pw)
+    # Here we use a class of some kind to represent and validate our
+    # client-side form data. For example, WTForms is a library that will
+    # handle this for us, and we use a custom LoginForm to validate.
+    form = LoginForm()
+    if form.validate_on_submit():
+        # Login and validate the user.
+        # user should be an instance of your `User` class
+        login_user(user)
 
-    if current_user.is_authenticated:
-        flash("USER LOGGED IN ALREADY")
-        flash("USER LOGGED IN ALREADY")
+        flask.flash('Logged in successfully.')
 
-    if usr.is_authenticated:
-        flash("Login Successful")
-        print("Login Successful")
-        login_user(usr)
-    else:
-        flash("Incorrect username and password!")
-        print("Incorrect username and password!")
+        next = flask.request.args.get('next')
+        if not is_safe_url(next):
+            return flask.abort(400)
 
-    return "Hello"
+        return flask.redirect(next or flask.url_for('index'))
 
-@login_manager.user_loader
-def load_user(user_id):
-    return user.get_id(user_id)
+def is_safe_url(url):
+    return 'financial-forecasting-react' in url
 
-# A welcome message to test our server
-@app.route('/')
-def index():
-    return "<h1>Welcome to our server !!</h1>"
+@auth.verify_password
+def verify_password(username, password):
+    return auth_user(username, password)
 
 
-# if __name__ == '__main__':
-#     # Threaded option to enable multiple instances for multiple user access support
-
+if __name__ == '__main__':
+    app.run(threaded=True, port=5000)
 

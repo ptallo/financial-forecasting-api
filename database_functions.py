@@ -17,7 +17,6 @@ def get_conn():
     cur = conn.cursor()
     return cur, conn
 
-
 def create_user_table():
     # Establish connection
     cur, conn = get_conn()
@@ -76,7 +75,7 @@ def insert_user(user_name, pword):
     if execute(query_user, cur):
         print("The username " + user_name + " is already in use!")
         cur.close()
-        return
+        return (400, error)
     else:
         # Hash password
         pword_hash = encode(pword)
@@ -84,7 +83,7 @@ def insert_user(user_name, pword):
         query = "INSERT INTO users (Username, Passwd_Hash) VALUES ('{}', '{}');".format(user_name, pword_hash)
         # Execute and commit query
         save(query, cur, conn, close=True)
-        print("User successfully created")
+        return (201, "User succesfully inserted")
 
 def delete_user(user_name, pword):
     # Ensure user account exists before deleting
@@ -178,7 +177,6 @@ def execute(query, cur, close=False):
     if close:
         cur.close()
     return rows
-
 
 def tester():
     #create_user_table()

@@ -44,14 +44,14 @@ def respond():
     return jsonify(response)
 
 
-@app.route('/signup', methods=['POST'])
+@app.route('/signup/', methods=['POST'])
 def signup():
     username = request.json.get('username')
     password = request.json.get('password')
     status, message = database_functions.insert_user(username, password)
     return message, status
 
-@app.route('/login', methods=['GET'])
+@app.route('/login/', methods=['GET'])
 def login():
     username = request.json.get('username')
     password = request.json.get('password')

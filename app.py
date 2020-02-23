@@ -29,7 +29,7 @@ def respond():
     # Extract date keys from historical data
     vals = [data[key]["close"] for key in data.keys()]
     # Put Dates and Close values into response
-    response = {"x": list(data.keys()), "y": vals}
+    response = {"x": list(data.keys()), "y": [vals], "names": ["actual"]}
 
     # Return the response in json format
     return jsonify(response)

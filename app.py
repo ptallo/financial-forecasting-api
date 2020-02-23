@@ -24,26 +24,13 @@ def respond():
 
     # Retrieve the name from url parameter
     ticker = request.args.get("stock", type=str)
-    raw_start = request.args.get("start", type=str)
-    raw_end = request.args.get("end", type=str)
-
-    # List comprehension to make start date
-    sl = [int(x) for x in str.split(raw_start, "-")]
-    # List comprehension to make end date
-    el = [int(x) for x in str.split(raw_end, "-")]
-
-    # Start date built from sl code comprehension
-    start_date = dt(sl[0], sl[1], sl[2])
-    # End date built from el code comprehension
-    end_date = dt(el[0], el[1], el[2])
 
     # Grab data from stock (ticker) from last end_date-start_date days
-    # data = get_historical_data(ticker, start_date, end_date)
-    data = requests.get("https://sandbox.iexapis.com/stable/stock/{}/chart/3m?token={}".format(ticker, "Tsk_942768a24d244db38c7a44e32e3bc000"))
+    data = get_historical_data(ticker)
 
     # Extract date keys from historical data
-    vals = [x['close'] for x in data]
-    dates = [x['date'] for x in data]
+    vals = [field['close'] for field in data]
+    dates = [field['date'] for field in data]
     # Put Dates and Close values into response
     response = {"x": dates, "y": [vals], "names": ["actual"]}
 
@@ -87,7 +74,12 @@ def check_auth(auth_token):
         del AUTH_TOKENS[t]
     return auth_token in AUTH_TOKENS  
 
-
+def get_historical_data(ticker, drange="3m"):
+    # TODO : replace sandbox with live api keys and base url
+    base_url = "https://sandbox.iexapis.com"
+    request_url = "{}/stable/stock/{}/chart/{}?token={}".format(base_url, ticker, drange, "Tsk_942768a24d244db38c7a44e32e3bc000")
+    response = requests.get(request_url)
+    return response.json()
 
 if __name__ == '__main__':
     app.run(threaded=True, port=5000)

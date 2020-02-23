@@ -5,10 +5,9 @@ from iexfinance.stocks import *
 from datetime import datetime as dt
 
 app = Flask(__name__)
-CORS(app)
+CORS(app, origins='*')
 
 @app.route('/getstockinfo/', methods=['GET'])
-@cross_origin()
 def respond():
     # Retrieve the name from url parameter
     ticker = request.args.get("stock", type=str)

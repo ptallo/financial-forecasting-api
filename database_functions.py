@@ -1,16 +1,9 @@
 import psycopg2 as pg2
-from cred import *
-from datetime import date as date
+from cred import * # Import login credentials
 import hashlib
-import time
-
-DEBUG = 0
 
 def get_conn():
     # Establish Connection
-    # TODO Remove timer
-    if DEBUG:
-        tic = time.perf_counter()
     # Try to connect
     try:
         query = "dbname='{}' user='{}' host='{}' password='{}'".format(
@@ -22,10 +15,6 @@ def get_conn():
 
     # Establish cursor
     cur = conn.cursor()
-    # TODO Remove debug code
-    if DEBUG:
-        toc = time.perf_counter()
-        print(f"Established connection in {toc - tic:0.4f} seconds")
     return cur, conn
 
 
@@ -38,9 +27,7 @@ def create_user_table():
     query = """CREATE TABLE users (
                             Username varchar(255) NOT NULL,
                             Passwd_Hash varchar(255) NOT NULL,
-                            Email varchar(255) NOT NULL,
-                            last_login DATE NOT NULL,
-                            PRIMARY KEY (Username, Email));"""
+                            PRIMARY KEY (Username));"""
     # Execute, commit, and close
     save(query, cur, conn, close=True)
 
@@ -65,7 +52,7 @@ def add_favorite(user_name, favorite):
     # Condition query
     where = "Username='{}' AND Ticker='{}'".format(user_name, favorite)
     # Only add favorite if no result is found
-    if select_from(["1"], "favorites", where, cur, conn) == []:
+    if select_from(["1"], "favorites", where, cur) == []:
         query = "INSERT INTO favorites (Username, Ticker) VALUES ('{}', '{}')".format(user_name, favorite)
         # Save transaction
         save(query, cur, conn)
@@ -80,31 +67,22 @@ def remove_favorite(user_name, favorite):
     save(query, cur, conn)
 
 
-def insert_user(user_name, pword, email):
+def insert_user(user_name, pword):
     # Insert into table Users
     cur, conn = get_conn()
-    # Grab current date
-    last_login = date.today()
-    # Hash password
-    pword_hash = encode(pword)
     # Query to see if username taken
     query_user = "SELECT 1 FROM users WHERE Username='{}' ;".format(user_name)
-    # Query to see if email is in use
-    query_email = "SELECT 1 FROM users WHERE Email='{}';".format(email)
     # Exit if username taken
-    if execute(query_email, cur):
-        print("The email " + email + " is already associated with an account!")
-        cur.close()
-        return
-    # Exit if email is in use
-    elif execute(query_user, cur):
+    if execute(query_user, cur):
         print("The username " + user_name + " is already in use!")
         cur.close()
         return
     else:
+        # Hash password
+        pword_hash = encode(pword)
         # Build Query
-        query = "INSERT INTO users (Username, Passwd_Hash, Email, last_login) VALUES ('{}', '{}', '{}', '{}');".format(user_name, pword_hash, email, last_login)
-        # Execute and sacommitve query
+        query = "INSERT INTO users (Username, Passwd_Hash) VALUES ('{}', '{}');".format(user_name, pword_hash)
+        # Execute and commit query
         save(query, cur, conn, close=True)
         print("User successfully created")
 
@@ -133,6 +111,7 @@ def auth_user(user_name, pword):
     pword_hash = encode(pword)
     # Returns object if match; [] if no match
     query = "SELECT 1 FROM users WHERE Username='{}' and Passwd_Hash='{}';".format(user_name, pword_hash)
+    # Return True if user found, False if no match
     return execute(query, cur, close=True) != []
 
 def change_password(user_name, old_pass, new_pass):
@@ -149,7 +128,9 @@ def change_password(user_name, old_pass, new_pass):
     save(query, cur, conn, close=True)
     print("Update successful")
 
-def select_from(fields, table, conditions, cur, conn):
+def select_from(fields, table, conditions, cur=None):
+    if cur == None:
+        cur, _ = get_conn()
     # Build fields string to select
     field_str = " "
     for field in fields[:-1]:
@@ -168,11 +149,17 @@ def select_from(fields, table, conditions, cur, conn):
     # Execute query
     return execute(query, cur)
 
-# TODO modify for final product
+def sanitize(query):
+    l_query = query.lower()
+    banned_words = ["drop", "delete", ";"]
+    for word in banned_words:
+        if word in query:
+            print("Invalid input. Detected dangerous word")
+            return False
+    return True
+
 def encode(password):
     # Encode user password
-    if not DEBUG:
-        return password
     m = hashlib.sha256()
     m.update(bytes(password, 'utf8'))
     return m.hexdigest()
@@ -195,18 +182,17 @@ def execute(query, cur, close=False):
 
 def tester():
     #create_user_table()
-    #insert_user("krauskmr", "my_password", "krauskmr@mail.uc.edu")
-    #select_from(["*"], "users", None)
-    #print(auth_user("krauskmr", "my_password"))
-    #change_password("krauskmr","new_password","old_password")
-    #insert_user("krauskmr", "my_password", "krauskmr@mail.uc.edu")
-    #delete_user("krauskmr", "my_password")
     #create_fav_table()
-    add_favorite("krauskmr", "dfs")
-    remove_favorite("krauskmr", "dfs")
-    add_favorite("krauskmr", "ABC")
+    #change_password("krauskmr","new_password","old_password")
+    #insert_user("krauskmr", "my_password")
+    #print(select_from(["*"], "users", None))
+    #delete_user("krauskmr", "my_password")
+    #add_favorite("krauskmr", "dfs")
+    #remove_favorite("krauskmr", "dfs")
+    #add_favorite("krauskmr", "ABC")
+    #print(select_from(["*"], "favorites", None))
+    pass
 
 
 if __name__ == '__main__':
-    DEBUG = 1
     tester()

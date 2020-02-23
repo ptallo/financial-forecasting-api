@@ -17,6 +17,10 @@ AUTH_TOKENS = {}
 @app.route('/getstockinfo/', methods=['GET'])
 def respond():
     # TODO : get auth token here and check
+    authtoken = request.json.get('authtoken')
+    if not check_auth(authtoken):
+        abort(400)
+        
     # Retrieve the name from url parameter
     ticker = request.args.get("stock", type=str)
     raw_start = request.args.get("start", type=str)

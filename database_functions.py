@@ -73,7 +73,7 @@ def insert_user(user_name, pword):
     query_user = "SELECT 1 FROM users WHERE Username='{}' ;".format(user_name)
     # Exit if username taken
     if execute(query_user, cur):
-        print("The username " + user_name + " is already in use!")
+        error = "The username " + user_name + " is already in use!"
         cur.close()
         return (400, error)
     else:

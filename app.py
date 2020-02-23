@@ -1,24 +1,22 @@
 # app.py
 from flask import Flask, request, jsonify, flash, abort
 from flask_cors import *
-from flask_login import LoginManager
-
 
 from iexfinance.stocks import *
 from datetime import datetime as dt
-from database_functions import auth_user, insert_user
+import random
+import database_functions
 
 app = Flask(__name__)
 app.secret_key = "USSR_SUPPER_SEKRET_KEZ"
 
-login_manager = LoginManager()
-login_manager.init_app(app)
-
 CORS(app, origins='*')
 
+AUTH_TOKENS = {}
 
 @app.route('/getstockinfo/', methods=['GET'])
 def respond():
+    # TODO : get auth token here and check
     # Retrieve the name from url parameter
     ticker = request.args.get("stock", type=str)
     raw_start = request.args.get("start", type=str)
@@ -46,31 +44,44 @@ def respond():
     return jsonify(response)
 
 
-@app.route('/login', methods=['GET', 'POST'])
+@app.route('/signup', methods=['POST'])
+def signup():
+    username = request.json.get('username')
+    password = request.json.get('password')
+    status, message = database_functions.insert_user(username, password)
+    return message, status
+
+@app.route('/login', methods=['GET'])
 def login():
-    # Here we use a class of some kind to represent and validate our
-    # client-side form data. For example, WTForms is a library that will
-    # handle this for us, and we use a custom LoginForm to validate.
-    form = LoginForm()
-    if form.validate_on_submit():
-        # Login and validate the user.
-        # user should be an instance of your `User` class
-        login_user(user)
+    username = request.json.get('username')
+    password = request.json.get('password')
+    should_auth_user = database_functions.auth_user(username, password)
+    if should_auth_user:
+        auth_token, auth_time = generate_auth_token(username)
+        AUTH_TOKENS[auth_token] = auth_time
+        response_dict = {
+            "token": auth_token,
+            "time": auth_time
+        }
+        return jsonify(response_dict)
+    else:
+        abort(400)
 
-        flask.flash('Logged in successfully.')
+def generate_auth_token(username):
+    thing_to_hash = 'username{}'.format(random.randint(0, 20))
+    return database_functions.encode(thing_to_hash), dt.now()
 
-        next = flask.request.args.get('next')
-        if not is_safe_url(next):
-            return flask.abort(400)
+def check_auth(auth_token):
+    tokens_to_remove = []
+    for token, time in AUTH_TOKENS.items():
+        if (time - dt.now()).seconds > 1800:
+            tokens_to_remove.append(token)
+    for token in tokens_to_remove:
+        del AUTH_TOKENS[token]
+    if auth_token in AUTH_TOKENS:
+        return True
+    return False    
 
-        return flask.redirect(next or flask.url_for('index'))
-
-def is_safe_url(url):
-    return 'financial-forecasting-react' in url
-
-@auth.verify_password
-def verify_password(username, password):
-    return auth_user(username, password)
 
 
 if __name__ == '__main__':

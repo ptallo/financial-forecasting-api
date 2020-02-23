@@ -1,10 +1,18 @@
 # app.py
-from flask import Flask, request, jsonify
+from flask import Flask, request, jsonify, flash
+from flask_login import current_user, login_user, LoginManager
+from flask_httpauth import HTTPAuth
 from flask_cors import *
 from iexfinance.stocks import *
 from datetime import datetime as dt
+from user import User as user
 
 app = Flask(__name__)
+auth = HTTPAuth()
+login_manager = LoginManager()
+app.secret_key = "USSR_SUPPER_SEKRET_KEZ"
+login_manager.init_app(app)
+app.run(threaded=True, port=5000)
 CORS(app, origins='*')
 
 @app.route('/getstockinfo/', methods=['GET'])
@@ -36,22 +44,29 @@ def respond():
     return jsonify(response)
 
 
-@app.route('/post/', methods=['POST'])
-def post_something():
-    param = request.form.get('name')
-    print(param)
-    # You can add the test cases you made in the previous function, but in our case here you are just testing the POST functionality
-    if param:
-        return jsonify({
-            "Message": f"Welcome {name} to our awesome platform!!",
-            # Add this option to distinct the POST request
-            "METHOD": "POST"
-        })
-    else:
-        return jsonify({
-            "ERROR": "no name found, please send a name."
-        })
+@app.route('/login/', methods=['GET', 'POST'])
+def login():
+    user_name = auth.username()
+    pw = auth.get_password(user_name)
+    usr = user(user_name, pw)
 
+    if current_user.is_authenticated:
+        flash("USER LOGGED IN ALREADY")
+        flash("USER LOGGED IN ALREADY")
+
+    if usr.is_authenticated:
+        flash("Login Successful")
+        print("Login Successful")
+        login_user(usr)
+    else:
+        flash("Incorrect username and password!")
+        print("Incorrect username and password!")
+
+    return "Hello"
+
+@login_manager.user_loader
+def load_user(user_id):
+    return user.get_id(user_id)
 
 # A welcome message to test our server
 @app.route('/')
@@ -59,6 +74,7 @@ def index():
     return "<h1>Welcome to our server !!</h1>"
 
 
-if __name__ == '__main__':
-    # Threaded option to enable multiple instances for multiple user access support
-    app.run(threaded=True, port=5000)
+# if __name__ == '__main__':
+#     # Threaded option to enable multiple instances for multiple user access support
+
+

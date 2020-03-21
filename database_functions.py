@@ -1,6 +1,8 @@
 import psycopg2 as pg2
 from cred import * # Import login credentials
 import hashlib
+import random
+import string
 
 def get_conn():
     # Establish Connection
@@ -26,6 +28,7 @@ def create_user_table():
     query = """CREATE TABLE users (
                             Username varchar(255) NOT NULL,
                             Passwd_Hash varchar(255) NOT NULL,
+                            Passwd_Salt varchar(16) NOT NULL,
                             PRIMARY KEY (Username));"""
     # Execute, commit, and close
     save(query, cur, conn, close=True)
@@ -65,7 +68,6 @@ def remove_favorite(user_name, favorite):
     # Save transaction
     save(query, cur, conn)
 
-
 def insert_user(user_name, pword):
     # Insert into table Users
     cur, conn = get_conn()
@@ -77,10 +79,12 @@ def insert_user(user_name, pword):
         cur.close()
         return (400, error)
     else:
-        # Hash password
-        pword_hash = encode(pword)
+        # Generate new password salt
+        salt = create_salt()
+        # Append salt to user password and hash
+        pword_hash = encode(pword+salt)
         # Build Query
-        query = "INSERT INTO users (Username, Passwd_Hash) VALUES ('{}', '{}');".format(user_name, pword_hash)
+        query = "INSERT INTO users (Username, Passwd_Hash, Passwd_Salt) VALUES ('{}', '{}', '{}');".format(user_name, pword_hash, salt)
         # Execute and commit query
         save(query, cur, conn, close=True)
         return (201, "User succesfully inserted")
@@ -92,10 +96,9 @@ def delete_user(user_name, pword):
         return
     # Get connection
     cur, conn = get_conn()
-    pword_hash = encode(pword)
     # TODO Delete other tables after created
     # Delete user from users tables
-    query = "DELETE FROM users WHERE Passwd_Hash ='{}' AND Username='{}';".format(pword_hash, user_name)
+    query = "DELETE FROM users WHERE Username='{}';".format(user_name)
     # Commit database deletion
     save(query, cur, conn)
     # Delete user favorites
@@ -106,8 +109,10 @@ def delete_user(user_name, pword):
 def auth_user(user_name, pword):
     # Get connection
     cur, conn = get_conn()
-    # Hash password
-    pword_hash = encode(pword)
+    # Grab password salt from dbase
+    salt = select_from(["Passwd_Salt"], "users", "Username='{}'".format(user_name), cur)[0][0]
+    # Hash password with salt
+    pword_hash = encode(pword+salt)
     # Returns object if match; [] if no match
     query = "SELECT 1 FROM users WHERE Username='{}' and Passwd_Hash='{}';".format(user_name, pword_hash)
     # Return True if user found, False if no match
@@ -120,10 +125,12 @@ def change_password(user_name, old_pass, new_pass):
         return
     # Get connection
     cur, conn = get_conn()
+    # Create new salt
+    salt = create_salt()
     # Encode password
-    pword_hash = encode(new_pass)
+    pword_hash = encode(new_pass+salt)
     # Update password hash in database
-    query = "UPDATE users SET Passwd_Hash ='{}' WHERE Username='{}';".format(pword_hash, user_name)
+    query = "UPDATE users SET Passwd_Hash ='{}', Passwd_Salt = '{}' WHERE Username='{}';".format(pword_hash, salt, user_name)
     save(query, cur, conn, close=True)
     print("Update successful")
 
@@ -143,7 +150,6 @@ def select_from(fields, table, conditions, cur=None):
         query += ' WHERE ' + conditions
     # Add ending ;
     query += ";"
-    print(query)
 
     # Execute query
     return execute(query, cur)
@@ -163,6 +169,11 @@ def encode(password):
     m.update(bytes(password, 'utf8'))
     return m.hexdigest()
 
+def create_salt():
+    # Generate random salt consisting of letters and numbers
+    salt = "".join(random.choice(string.ascii_letters+string.digits) for _ in range(16))
+    return salt
+
 def save(query, cur, conn, close=False):
     # Execute query, commit, and close connection
     cur.execute(query)
@@ -181,15 +192,14 @@ def execute(query, cur, close=False):
 def tester():
     #create_user_table()
     #create_fav_table()
-    #change_password("krauskmr","new_password","old_password")
-    #insert_user("krauskmr", "my_password")
-    #print(select_from(["*"], "users", None))
-    #delete_user("krauskmr", "my_password")
+    #change_password("krauskmr","my_password","old_password")
+    insert_user("krauskmr", "my_password")
+    print(select_from(["*"], "users", None))
+    #delete_user("krauskmr", "old_password")
     #add_favorite("krauskmr", "dfs")
     #remove_favorite("krauskmr", "dfs")
     #add_favorite("krauskmr", "ABC")
     #print(select_from(["*"], "favorites", None))
-    pass
 
 
 if __name__ == '__main__':

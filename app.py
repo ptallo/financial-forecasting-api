@@ -72,7 +72,10 @@ def check_auth(auth_token):
             tokens_to_remove.append(token)
     for t in tokens_to_remove:
         del AUTH_TOKENS[t]
-    return auth_token in AUTH_TOKENS  
+    if auth_token in AUTH_TOKENS:
+        AUTH_TOKENS[auth_token] = dt.now()
+        return True
+    return False
 
 def get_historical_data(ticker, drange="3m"):
     # TODO : replace sandbox with live api keys and base url

@@ -67,7 +67,7 @@ def run_user_dbo_tests(cur, conn):
     return len(user_dbo_tests), failed_tests
 
 
-def test_duplicate_insert_user(user_dbo):
+def test_duplicate_insert_user(user_dbo: users.UsersTable):
     assertEqual(user_dbo.insert_user(testuser_info.get(
         "username"), testuser_info.get("password")), True)
     assertEqual(user_dbo.insert_user(testuser_info.get(
@@ -76,14 +76,14 @@ def test_duplicate_insert_user(user_dbo):
         raise Exception('test not cleaned up properly')
 
 
-def test_insert_delete_user(user_dbo):
+def test_insert_delete_user(user_dbo: users.UsersTable):
     assertEqual(user_dbo.insert_user(testuser_info.get(
         "username"), testuser_info.get("password")), True)
     assertEqual(user_dbo.delete_user(testuser_info.get(
         "username"), testuser_info.get("password")), True)
 
 
-def test_authenticate_user(user_dbo):
+def test_authenticate_user(user_dbo: users.UsersTable):
     assertEqual(user_dbo.insert_user(testuser_info.get(
         "username"), testuser_info.get("password")), True)
     assertEqual(user_dbo.authenticate_user(testuser_info.get(
@@ -92,7 +92,7 @@ def test_authenticate_user(user_dbo):
         raise Exception('test not cleaned up properly')
 
 
-def test_change_password(user_dbo):
+def test_change_password(user_dbo: users.UsersTable):
     assertEqual(user_dbo.insert_user(testuser_info.get(
         "username"), testuser_info.get("password")), True)
     assertEqual(user_dbo.authenticate_user(testuser_info.get(

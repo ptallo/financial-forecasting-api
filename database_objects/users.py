@@ -41,6 +41,7 @@ class UsersTable(table.DatabaseTable):
         return True
 
     def authenticate_user(self, username: str, password: str):
+        """Attempts to authenticate the user, returns True if the username and password are valid"""
         salt = tools.select_from(["Passwd_Salt"], "users", "Username='{}'".format(
             username), self.db_cursor)[0][0]
         password_hash = tools.encode(password+salt)

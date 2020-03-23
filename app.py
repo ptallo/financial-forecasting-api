@@ -23,9 +23,9 @@ def signup():
     username = request.json.get('username')
     password = request.json.get('password')
     if dbcontext.users.insert_user(username, password):
-        return json.dumps({'success': True}), 200
+        return "Signup successful", 200
     else:
-        return json.dumps({'success': False}), 422
+        return "Signup failed due to internal server error", 422
 
 
 @app.route('/login/', methods=['GET'])

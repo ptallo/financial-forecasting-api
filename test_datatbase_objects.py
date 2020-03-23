@@ -13,7 +13,8 @@ testuser_info = {
     "username": "testuser",
     "password": "chrisisdumb",
     "passwordChange": "ma22ispoopoo",
-    "favorite": "AAPL"
+    "favorite": "AAPL",
+    "favoriteTwo": "TSLA"
 }
 
 
@@ -21,7 +22,8 @@ def run_favorites_dbo_tests(cur, conn):
     favorites_dbo = favorites.FavoritesTable(cur, conn)
     user_dbo = users.UsersTable(cur, conn)
     favorites_dbo_tests = [
-        test_add_remove_favorite
+        test_add_remove_favorite,
+        test_rmemove_all_favorites
     ]
 
     failed_tests = 0
@@ -44,7 +46,25 @@ def test_add_remove_favorite(user_dbo: users.UsersTable, favorites_dbo: favorite
     assertEqual(favorites_dbo.remove_favorite(testuser_info.get(
         'username'), testuser_info.get('favorite')), True)
 
-    if not user_dbo.delete_user(testuser_info.get("username"), testuser_info.get("passwordChange")):
+    if not user_dbo.delete_user(testuser_info.get("username"), testuser_info.get("passwordChange"), favorites_dbo):
+        raise Exception('test not cleaned up properly')
+
+
+def test_rmemove_all_favorites(user_dbo: users.UsersTable, favorites_dbo: favorites.FavoritesTable):
+    inserted_user = user_dbo.insert_user(testuser_info.get(
+        "username"), testuser_info.get("passwordChange"))
+    inserted_fav1 = favorites_dbo.add_favorite(
+        testuser_info.get('username'), testuser_info.get('favorite'))
+    inserted_fav2 = favorites_dbo.add_favorite(
+        testuser_info.get('username'), testuser_info.get('favoriteTwo'))
+
+    if not (inserted_user and inserted_fav1 and inserted_fav2):
+        raise Exception('test not set up properly')
+
+    assertEqual(favorites_dbo.remove_all_favorites(
+        testuser_info.get("username")), True)
+
+    if not user_dbo.delete_user(testuser_info.get("username"), testuser_info.get("passwordChange"), favorites_dbo):
         raise Exception('test not cleaned up properly')
 
 
@@ -72,15 +92,15 @@ def test_duplicate_insert_user(user_dbo: users.UsersTable):
         "username"), testuser_info.get("password")), True)
     assertEqual(user_dbo.insert_user(testuser_info.get(
         "username"), testuser_info.get("password")), False)
-    if not user_dbo.delete_user(testuser_info.get("username"), testuser_info.get("password")):
+    if not user_dbo.delete_user(testuser_info.get("username"), testuser_info.get("password"), favorites.FavoritesTable()):
         raise Exception('test not cleaned up properly')
 
 
 def test_insert_delete_user(user_dbo: users.UsersTable):
     assertEqual(user_dbo.insert_user(testuser_info.get(
         "username"), testuser_info.get("password")), True)
-    assertEqual(user_dbo.delete_user(testuser_info.get(
-        "username"), testuser_info.get("password")), True)
+    assertEqual(user_dbo.delete_user(testuser_info.get("username"),
+                                     testuser_info.get("password"), favorites.FavoritesTable()), True)
 
 
 def test_authenticate_user(user_dbo: users.UsersTable):
@@ -88,7 +108,7 @@ def test_authenticate_user(user_dbo: users.UsersTable):
         "username"), testuser_info.get("password")), True)
     assertEqual(user_dbo.authenticate_user(testuser_info.get(
         "username"), testuser_info.get("password")), True)
-    if not user_dbo.delete_user(testuser_info.get("username"), testuser_info.get("password")):
+    if not user_dbo.delete_user(testuser_info.get("username"), testuser_info.get("password"), favorites.FavoritesTable()):
         raise Exception('test not cleaned up properly')
 
 
@@ -101,7 +121,7 @@ def test_change_password(user_dbo: users.UsersTable):
         testuser_info.get("username"), testuser_info.get("password"), testuser_info.get("passwordChange")), True)
     assertEqual(user_dbo.authenticate_user(testuser_info.get(
         "username"), testuser_info.get("passwordChange")), True)
-    if not user_dbo.delete_user(testuser_info.get("username"), testuser_info.get("passwordChange")):
+    if not user_dbo.delete_user(testuser_info.get("username"), testuser_info.get("passwordChange"), favorites.FavoritesTable()):
         raise Exception('test not cleaned up properly')
 
 

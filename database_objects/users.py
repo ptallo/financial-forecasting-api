@@ -1,5 +1,6 @@
 from database_objects import tools
 from database_objects import table
+from database_objects import favorites
 
 
 class UsersTable(table.DatabaseTable):
@@ -31,13 +32,12 @@ class UsersTable(table.DatabaseTable):
             tools.save(query, self.db_cursor, self.db_connection)
             return True
 
-    def delete_user(self, username: str, password: str):
+    def delete_user(self, username: str, password: str, favorites_dbo: favorites.FavoritesTable):
         if not self.authenticate_user(username, password):
             return False
         query = "DELETE FROM users WHERE Username='{}';".format(username)
         tools.save(query, self.db_cursor, self.db_connection)
-        query = "DELETE FROM favorites WHERE Username ='{}';".format(username)
-        tools.save(query, self.db_cursor, self.db_connection)
+        favorites_dbo.remove_all_favorites(username)
         return True
 
     def authenticate_user(self, username: str, password: str):

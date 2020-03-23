@@ -37,3 +37,8 @@ class FavoritesTable(table.DatabaseTable):
             username, favorite)
         tools.save(query, self.db_cursor, self.db_connection)
         return True
+
+    def remove_all_favorites(self, username: str):
+        query = "DELETE FROM favorites WHERE Username ='{}';".format(username)
+        tools.save(query, self.db_cursor, self.db_connection)
+        return True

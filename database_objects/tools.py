@@ -21,7 +21,7 @@ def get_conn():
     return cur, conn
 
 
-def select_from(fields, table, conditions, cur=None):
+def select_from(fields: list, table: str, conditions: str, cur=None):
     if cur == None:
         cur, _ = get_conn()
     # Build fields string to select
@@ -42,7 +42,7 @@ def select_from(fields, table, conditions, cur=None):
     return execute(query, cur)
 
 
-def sanitize(query):
+def sanitize(query: str):
     l_query = query.lower()
     banned_words = ["drop", "delete", ";"]
     for word in banned_words:
@@ -52,7 +52,7 @@ def sanitize(query):
     return True
 
 
-def encode(password):
+def encode(password: str):
     # Encode user password
     m = hashlib.sha256()
     m.update(bytes(password, 'utf8'))
@@ -66,7 +66,7 @@ def create_salt():
     return salt
 
 
-def save(query, cur, conn, close=False):
+def save(query: str, cur, conn, close=False):
     # Execute query, commit, and close connection
     cur.execute(query)
     conn.commit()
@@ -74,7 +74,7 @@ def save(query, cur, conn, close=False):
         cur.close()
 
 
-def execute(query, cur, close=False):
+def execute(query: str, cur, close=False):
     # Execute query, return rows, and close connection
     cur.execute(query)
     rows = cur.fetchall()

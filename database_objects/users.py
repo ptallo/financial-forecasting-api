@@ -9,10 +9,10 @@ class UsersTable(table.DatabaseTable):
     def create_table(self):
         # Create user table
         query = """CREATE TABLE users (
-                    Username varchar(255) NOT NULL,
-                    Passwd_Hash varchar(255) NOT NULL,
-                    Passwd_Salt varchar(16) NOT NULL,
-                    PRIMARY KEY (Username));"""
+                Username varchar(255) NOT NULL,
+                Passwd_Hash varchar(255) NOT NULL,
+                Passwd_Salt varchar(16) NOT NULL,
+                PRIMARY KEY (Username));"""
         # Execute, commit, and close
         tools.save(query, self.db_cursor, self.db_connection)
 
@@ -31,7 +31,7 @@ class UsersTable(table.DatabaseTable):
             tools.save(query, self.db_cursor, self.db_connection)
             return True
 
-    def delete_user(self, username, password):
+    def delete_user(self, username: str, password: str):
         if not self.authenticate_user(username, password):
             return False
         query = "DELETE FROM users WHERE Username='{}';".format(username)
@@ -40,7 +40,7 @@ class UsersTable(table.DatabaseTable):
         tools.save(query, self.db_cursor, self.db_connection)
         return True
 
-    def authenticate_user(self, username, password):
+    def authenticate_user(self, username: str, password: str):
         salt = tools.select_from(["Passwd_Salt"], "users", "Username='{}'".format(
             username), self.db_cursor)[0][0]
         password_hash = tools.encode(password+salt)
@@ -48,7 +48,7 @@ class UsersTable(table.DatabaseTable):
             username, password_hash)
         return tools.execute(query, self.db_cursor) != []
 
-    def change_user_password(self, username, old_password, new_password):
+    def change_user_password(self, username: str, old_password: str, new_password: str):
         if not self.authenticate_user(username, old_password):
             return False
         salt = tools.create_salt()

@@ -1,3 +1,5 @@
+import random
+
 from datetime import datetime as dt
 from database_objects import tools
 
@@ -7,7 +9,8 @@ class AuthHandler:
         self.auth_tokens = {}
 
     def get_auth_token(self, username):
-        auth_token = tools.encode('{}{}'.format(username, random.randint(0, 20)))
+        auth_token = tools.encode('{}{}'.format(
+            username, random.randint(0, 20)))
         self.auth_tokens[auth_token] = dt.now()
         return auth_token, self.auth_tokens.get(auth_token)
 

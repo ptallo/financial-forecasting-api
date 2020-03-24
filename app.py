@@ -3,8 +3,6 @@ from flask import Flask, request, jsonify, flash, abort
 from flask_cors import *
 
 import base64
-import random
-import requests
 
 from database_objects.dbcontext import DatabaseContext
 from utils.auth_handler import AuthHandler

@@ -42,22 +42,26 @@ class UsersTable(table.DatabaseTable):
 
     def authenticate_user(self, username: str, password: str):
         """Attempts to authenticate the user, returns True if the username and password are valid"""
-        salt = tools.select_from(["Passwd_Salt"], "users", "Username='{}'".format(
-            username), self.db_cursor)[0][0]
-        password_hash = tools.encode(password+salt)
-        query = "SELECT 1 FROM users WHERE Username='{}' and Passwd_Hash='{}';".format(
-            username, password_hash)
-        return tools.execute(query, self.db_cursor) != []
+        password_hash, salt = self.get_user_info(username)
+        submitted_password_hash = tools.encode(password+salt)
+        return password_hash == submitted_password_hash
 
     def change_user_password(self, username: str, old_password: str, new_password: str):
         if not self.authenticate_user(username, old_password):
             return False
-        salt = tools.create_salt()
-        password_hash = tools.encode(new_password+salt)
+        new_salt = tools.create_salt()
+        new_password_hash = tools.encode(new_password+new_salt)
         query = "UPDATE users SET Passwd_Hash ='{}', Passwd_Salt = '{}' WHERE Username='{}';".format(
-            password_hash, salt, username)
+            new_password_hash, new_salt, username)
         tools.save(query, self.db_cursor, self.db_connection)
         return True
 
     def get_all_users(self):
         return tools.execute("SELECT * FROM users", self.db_cursor)
+
+    def get_user_info(self, username: str):
+        """get_user_info(username) -> (password_hash, salt)"""
+        returned_users = tools.execute("SELECT * FROM users WHERE Username='{}'".format(username), self.db_cursor)
+        if len(returned_users) > 0:
+            username, password_hash, salt = returned_users[0]
+        return password_hash, salt

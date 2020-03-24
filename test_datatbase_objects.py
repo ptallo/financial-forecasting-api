@@ -18,6 +18,24 @@ testuser_info = {
 }
 
 
+def run_all_db_tests():
+    cur, conn = tools.get_conn()
+
+    table_tests = [
+        run_user_dbo_tests,
+        run_favorites_dbo_tests
+    ]
+
+    total, failed = 0, 0
+    for table_test in table_tests:
+        t, f = table_test(cur, conn)
+        total += t
+        failed += f
+    cur.close()
+
+    print('{} tests passed! {} tests failed!'.format(total-failed, failed))
+
+
 def run_favorites_dbo_tests(cur, conn):
     favorites_dbo = favorites.FavoritesTable(cur, conn)
     user_dbo = users.UsersTable(cur, conn)
@@ -132,18 +150,4 @@ def assertEqual(actual, expected):
 
 
 if __name__ == '__main__':
-    cur, conn = tools.get_conn()
-
-    table_tests = [
-        run_user_dbo_tests,
-        run_favorites_dbo_tests
-    ]
-
-    total, failed = 0, 0
-    for table_test in table_tests:
-        t, f = table_test(cur, conn)
-        total += t
-        failed += f
-    cur.close()
-
-    print('{} tests passed! {} tests failed!'.format(total-failed, failed))
+    run_all_db_tests()

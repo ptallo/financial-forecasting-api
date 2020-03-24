@@ -1,8 +1,9 @@
 # app.py
 from flask import Flask, request, jsonify, flash, abort
 from flask_cors import *
-
 from datetime import datetime as dt
+
+import base64
 import random
 import requests
 
@@ -30,8 +31,9 @@ def signup():
 
 @app.route('/login/', methods=['GET'])
 def login():
-    username = request.json.get('username')
-    password = request.json.get('password')
+    auth_header = request.headers.get("Authorization")
+    auth_header_str = base64.b64decode(auth_header).decode('utf-8')
+    username, password = auth_header_str.split(":")
     if dbcontext.users.authenticate_user(username, password):
         auth_token, auth_time = generate_auth_token(username)
         AUTH_TOKENS[auth_token] = auth_time

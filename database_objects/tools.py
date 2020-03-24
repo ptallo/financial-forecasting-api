@@ -39,14 +39,18 @@ def select_from(fields: list, table: str, conditions: str, cur=None):
     query += ";"
 
     # Execute query
-    return execute(query, cur)
+    if sanitize(query):
+        return execute(query, cur)
+    else:
+        return None
 
 
 def sanitize(query: str):
+    # Check for sql injection
     l_query = query.lower()
     banned_words = ["drop", "delete", ";"]
     for word in banned_words:
-        if word in query:
+        if word in l_query:
             print("Invalid input. Detected dangerous word")
             return False
     return True

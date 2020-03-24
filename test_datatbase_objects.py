@@ -23,13 +23,13 @@ def run_favorites_dbo_tests(cur, conn):
     user_dbo = users.UsersTable(cur, conn)
     favorites_dbo_tests = [
         test_add_remove_favorite,
-        test_rmemove_all_favorites
+        test_remove_all_favorites
     ]
 
     failed_tests = 0
     for test in favorites_dbo_tests:
         try:
-            test_add_remove_favorite(user_dbo, favorites_dbo)
+            test(user_dbo, favorites_dbo)
         except AssertionError:
             failed_tests += 1
 
@@ -50,7 +50,7 @@ def test_add_remove_favorite(user_dbo: users.UsersTable, favorites_dbo: favorite
         raise Exception('test not cleaned up properly')
 
 
-def test_rmemove_all_favorites(user_dbo: users.UsersTable, favorites_dbo: favorites.FavoritesTable):
+def test_remove_all_favorites(user_dbo: users.UsersTable, favorites_dbo: favorites.FavoritesTable):
     inserted_user = user_dbo.insert_user(testuser_info.get(
         "username"), testuser_info.get("passwordChange"))
     inserted_fav1 = favorites_dbo.add_favorite(

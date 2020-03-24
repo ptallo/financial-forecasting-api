@@ -31,7 +31,7 @@ def signup():
 
 @app.route('/login/', methods=['GET'])
 def login():
-    auth_header = request.headers.get("Authorization")
+    auth_type, auth_header = request.headers.get("Authorization").split()
     auth_header_str = base64.b64decode(auth_header).decode('utf-8')
     username, password = auth_header_str.split(":")
     if dbcontext.users.authenticate_user(username, password):

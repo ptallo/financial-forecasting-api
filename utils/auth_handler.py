@@ -21,7 +21,7 @@ class AuthHandler:
     def is_token_valid(self, auth_token):
         self.remove_timed_out_tokens()
         if auth_token in self.auth_tokens.keys():
-            AUTH_TOKENS[auth_token] = dt.now()
+            self.auth_tokens[auth_token] = dt.now()
             return True
         return False
 

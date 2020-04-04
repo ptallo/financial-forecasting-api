@@ -61,6 +61,9 @@ def test_add_remove_favorite(user_dbo: users.UsersTable, favorites_dbo: favorite
     assertEqual(favorites_dbo.add_favorite(testuser_info.get(
         'username'), testuser_info.get('favorite')), True)
 
+    assertEqual(favorites_dbo.get_all_favorites(testuser_info.get(
+        'username')), [testuser_info.get('favorite'), testuser_info.get('favoriteTwo')])
+
     assertEqual(favorites_dbo.remove_favorite(testuser_info.get(
         'username'), testuser_info.get('favorite')), True)
 

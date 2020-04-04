@@ -35,8 +35,6 @@ def select_from(fields: list, table: str, conditions: str, cur=None):
     # Handle special conditions
     if conditions:
         query += ' WHERE ' + conditions
-    # Add ending ;
-    query += ";"
 
     # Execute query
     if sanitize(query):

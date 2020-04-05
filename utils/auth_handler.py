@@ -20,6 +20,11 @@ class AuthHandler:
         auth_type, auth_token = request.headers.get("Authorization").split()
         return auth_type == "Bearer" and self.is_token_valid(auth_token)
 
+    def get_user(self, request):
+        _, auth_token = request.headers.get("Authorization").split()
+        time_user_dict = self.auth_tokens[auth_token]
+        return time_user_dict["user"]
+
     def is_token_valid(self, auth_token):
         self.remove_timed_out_tokens()
         if auth_token in self.auth_tokens.keys():

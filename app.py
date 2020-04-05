@@ -48,7 +48,7 @@ def add_favorite():
 
     # Retrieve the name from url parameter
     ticker = request.args.get("ticker", type=str)
-    username = request.args.get("user", type=str)
+    username = auth_handler.get_user(request)
 
     if dbcontext.favorites.add_favorite(username, ticker):
         return "{} successfully added to favorites".format(ticker)
@@ -62,7 +62,7 @@ def remove_favorite():
 
     # Retrieve the name from url parameter
     ticker = request.args.get("ticker", type=str)
-    username = request.args.get("user", type=str)
+    username = auth_handler.get_user(request)
 
     if dbcontext.favorites.remove_favorite(username, ticker):
         return "{} successfully removed from favorites".format(ticker)
@@ -73,7 +73,7 @@ def get_favorites():
     if not auth_handler.is_authenticated_request(request):
         return abort(401, "User not authenticated!")
 
-    username = request.args.get("user", type=str)
+    username = auth_handler.get_user(request)
 
     favorites = dbcontext.favorites.get_all_favorites(username)
 

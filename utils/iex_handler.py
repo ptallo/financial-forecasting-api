@@ -14,4 +14,6 @@ class IEXHandler:
             self.api_key
         )
         response = requests.get(request_url)
-        return response.json()
+        if response.ok:
+            return response.json()
+        raise Exception("Bad response from historical data code: {} reason: {}".format(response.status_code, response.text))

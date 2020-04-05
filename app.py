@@ -89,8 +89,11 @@ def respond():
     ticker = request.args.get("stock", type=str)
 
     # Grab data from stock (ticker) from last end_date-start_date days
-    data = iex_handler.get_historical_data(ticker)
-
+    data = {}
+    try:
+        data = iex_handler.get_historical_data(ticker)
+    except Exception as e:
+        return abort(400, str(e))
     # Extract date keys from historical data
     close_data = [field['close'] for field in data]
     dates = [field['date'] for field in data]

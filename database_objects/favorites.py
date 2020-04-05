@@ -40,5 +40,12 @@ class FavoritesTable(table.DatabaseTable):
 
     def remove_all_favorites(self, username: str):
         query = "DELETE FROM favorites WHERE Username ='{}';".format(username)
-        tools.save(query, self.db_cursor, self.db_connection)
+        if tools.sanitize(query):
+            tools.save(query, self.db_cursor, self.db_connection)
         return True
+
+    def get_all_favorites(self, username: str):
+        results = tools.select_from(["Ticker"], "favorites", "Username='{}'".format(username))
+        # Results is formatted as [('ticker',),...]. Change to array.
+        formatted_result = [fav[0] for fav in results]
+        return formatted_result

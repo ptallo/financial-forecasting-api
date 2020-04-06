@@ -22,6 +22,7 @@ def get_conn():
 
 
 def select_from(fields: list, table: str, conditions: str, cur=None):
+    ''' Returns 2-D array of query results '''
     if cur == None:
         cur, _ = get_conn()
     # Build fields string to select
@@ -38,17 +39,22 @@ def select_from(fields: list, table: str, conditions: str, cur=None):
 
     # Execute query
     if sanitize(query):
-        return execute(query, cur)
+        results =  execute(query, cur)
+        # Change output to array format
+        formatted_results = []
+        for entry in results:
+            formatted_results.append([item for item in entry if item != ''])
+        return formatted_results
     else:
         return None
 
 
 def sanitize(query: str):
     # Check for sql injection
-    l_query = query.lower()
+    l_query = query.lower().split()
     banned_words = ["drop", "delete", ";"]
-    for word in banned_words:
-        if word in l_query:
+    for word in l_query:
+        if word in banned_words:
             print("Invalid input. Detected dangerous word")
             return False
     return True

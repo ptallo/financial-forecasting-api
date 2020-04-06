@@ -45,7 +45,8 @@ class FavoritesTable(table.DatabaseTable):
         return True
 
     def get_all_favorites(self, username: str):
-        results = tools.select_from(["Ticker"], "favorites", "Username='{}'".format(username))
-        # Results is formatted as [('ticker',),...]. Change to array.
-        formatted_result = [fav[0] for fav in results]
-        return formatted_result
+        # Return all favorites of a user
+        results_2D = tools.select_from(["Ticker"], "favorites", "Username='{}'".format(username))
+        # Switch from 2-D array to 1-D
+        results_1D = [result[0] for result in results_2D]
+        return results_1D

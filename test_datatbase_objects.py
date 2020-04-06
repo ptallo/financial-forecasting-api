@@ -7,6 +7,7 @@ import string
 from database_objects import tools
 from database_objects import users
 from database_objects import favorites
+from database_objects import auth_tokens
 
 
 testuser_info = {

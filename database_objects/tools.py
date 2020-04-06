@@ -3,6 +3,7 @@ from cred import *  # Import login credentials
 import hashlib
 import random
 import string
+from datetime import datetime as dt
 
 
 def get_conn():
@@ -89,3 +90,14 @@ def execute(query: str, cur, close=False):
     if close:
         cur.close()
     return rows
+
+def format_date():
+    # Grab datetime object
+    today = dt.now()
+    # Format MM/DD/YY into YYMMDD
+    MDY = today.strftime("%x").split("/")
+    YMD = MDY[2] + MDY[0] + MDY[1]
+    # Grab time
+    time = today.strftime("%X").replace(":", "")
+    date = YMD + time
+    return date

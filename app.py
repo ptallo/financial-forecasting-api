@@ -68,6 +68,7 @@ def remove_favorite():
         return "{} successfully removed from favorites".format(ticker)
     return "Failed to remove {} from favorites".format(ticker)
 
+
 @app.route('/getfavorites/', methods=['GET'])
 def get_favorites():
     if not auth_handler.is_authenticated_request(request):
@@ -102,6 +103,14 @@ def respond():
 
     # Return the response in json format
     return jsonify(response)
+
+
+@app.route('/getvalidtickers/', methods=['GET'])
+def get_valid_tickers():
+    if not auth_handler.is_authenticated_request(request):
+        return abort(401, "User not authenticated!")
+
+    return jsonify(iex_handler.stock_tickers)
 
 
 if __name__ == '__main__':

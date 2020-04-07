@@ -8,11 +8,14 @@ class IEXHandler:
         self.stock_tickers = []
         self.populate_info()
 
-    def get_historical_data(self, ticker, drange="3m"):
+    def get_historical_data(self, ticker, date_range):
+        if date_range not in ["1y", "6m", "3m", "1m"]:
+            date_range = "1m"
+
         request_url = "{}/stable/stock/{}/chart/{}?token={}".format(
             self.base_url,
             ticker,
-            drange,
+            date_range,
             self.api_key
         )
         response = requests.get(request_url)

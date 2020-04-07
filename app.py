@@ -88,11 +88,12 @@ def respond():
 
     # Retrieve the name from url parameter
     ticker = request.args.get("stock", type=str)
+    date_range = request.args.get("date_range", type=str)
 
     # Grab data from stock (ticker) from last end_date-start_date days
     data = {}
     try:
-        data = iex_handler.get_historical_data(ticker)
+        data = iex_handler.get_historical_data(ticker, date_range)
     except Exception as e:
         return abort(400, str(e))
     # Extract date keys from historical data

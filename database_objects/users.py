@@ -21,8 +21,9 @@ class UsersTable(table.DatabaseTable):
         self.save(query)
 
     def insert_user(self, username: str, password: str):
-        """Attempts to insert a user, while return a True if the user is successfully inserted"""
-        if self.execute("SELECT 1 FROM {} WHERE Username='{}' ;".format(self.table_name, username)):
+        """Attempts to insert a user. Return a True if the user is successfully inserted"""
+        where = "Username='{}'".format(username)
+        if self.select_from(["1"], where) != []:
             return False
         else:
             salt = self.create_salt()
@@ -57,13 +58,16 @@ class UsersTable(table.DatabaseTable):
         return True
 
     def get_all_users(self):
-        return self.execute("SELECT * FROM {}".format(self.table_name))
+        results2D = self.select_from(["Username"])
+        results = [result[0] for result in results2D]
+        return results
 
     def get_user_info(self, username: str):
         """get_user_info(username) -> (password_hash, salt)"""
-        returned_users = self.execute("SELECT * FROM {} WHERE Username='{}'".format(self.table_name, username))
+        where = "Username='{}'".format(username)
+        returned_users = self.select_from(["*"], where)[0]
         if len(returned_users) > 0:
-            username, password_hash, salt = returned_users[0]
+            password_hash, salt = returned_users[1:]
         return password_hash, salt
 
     def create_salt(self):

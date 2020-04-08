@@ -41,11 +41,11 @@ class AuthTokenTable(table.DatabaseTable):
 
     def check_token(self, username, token):
         # Select token from table to see if valid
-        query = """SELECT 1 FROM {} WHERE Username='{}' AND Token='{}'""".format(self.table_name, username, token)
+        where = "Username='{}' AND Token='{}'""".format(username, token)
         # Sanitize
-        if self.sanitize(query):
+        if self.sanitize(where):
             # Check if token is in database still
-            if self.execute(query) != []:
+            if self.select_from(["1"], where) != []:
                 # Update time stamp in token database
                 update_query = """UPDATE {} SET DateTime='{}' WHERE Username='{}'""".format(self.table_name, self.format_date(), username)
                 # Save to database
@@ -63,10 +63,10 @@ class AuthTokenTable(table.DatabaseTable):
         # Grab current time
         cur_time = self.format_date()
         # Grab all usernames
-        results_2D = self.select_from(["Username"], None)
+        results_2D = self.select_from(["Username"])
         results = [result[0] for result in results_2D]
         for user in results:
-            old_time = self.select_from(["DateTime"], None)[0][0]
+            old_time = self.select_from(["DateTime"])[0][0]
             # Format is YYMMDhhmmss. Expire if older than 30 minutes
             if int(cur_time) - int(old_time) >= 3000:
                 self.remove_token(user)

@@ -1,10 +1,3 @@
-import psycopg2 as pg2
-from cred import *  # Import login credentials
-import hashlib
-import random
-import string
-
-from database_objects import tools
 from database_objects import users
 from database_objects import favorites
 from database_objects import auth_tokens
@@ -20,8 +13,6 @@ testuser_info = {
 
 
 def run_all_db_tests():
-    cur, conn = tools.get_conn()
-
     table_tests = [
         run_user_dbo_tests,
         run_favorites_dbo_tests
@@ -29,17 +20,16 @@ def run_all_db_tests():
 
     total, failed = 0, 0
     for table_test in table_tests:
-        t, f = table_test(cur, conn)
+        t, f = table_test()
         total += t
         failed += f
-    cur.close()
 
     print('{} tests passed! {} tests failed!'.format(total-failed, failed))
 
 
-def run_favorites_dbo_tests(cur, conn):
-    favorites_dbo = favorites.FavoritesTable(cur, conn)
-    user_dbo = users.UsersTable(cur, conn)
+def run_favorites_dbo_tests():
+    favorites_dbo = favorites.FavoritesTable()
+    user_dbo = users.UsersTable()
     favorites_dbo_tests = [
         test_add_remove_favorite,
         test_remove_all_favorites
@@ -52,6 +42,8 @@ def run_favorites_dbo_tests(cur, conn):
         except AssertionError:
             failed_tests += 1
 
+    favorites_dbo.close()
+    user_dbo.close()
     return len(favorites_dbo_tests), failed_tests
 
 

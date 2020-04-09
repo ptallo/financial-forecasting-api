@@ -1,12 +1,10 @@
 from database_objects import tools
-import psycopg2 as pg2
-from cred import * # Import login credentials
 
 
 class DatabaseTable:
     def __init__(self, cursor=None, connection=None):
         if cursor is None or connection is None:
-            self.get_conn()
+            self.conn, self.cur = tools.get_conn()
         else:
             self.cur = cursor
             self.conn = connection
@@ -53,20 +51,6 @@ class DatabaseTable:
                 return False
         return True
 
-    def get_conn(self):
-        # Establish Connection
-        # Try to connect
-        try:
-            query = "dbname='{}' user='{}' host='{}' password='{}'".format(
-                    dbase_name, user, host, password)
-            self.conn = pg2.connect(query)
-        # TODO Handle connection failure
-        except:
-            print("Error! Failed to connect")
-
-        # Establish cursor
-        self.cur = self.conn.cursor()
-
     def execute(self, query: str):
         # Execute query and return rows
         self.cur.execute(query)
@@ -76,8 +60,3 @@ class DatabaseTable:
     def close(self):
         # Close connections to database
         self.cur.close()
-
-    def save(self, query: str):
-        # Execute query and save result
-        self.cur.execute(query)
-        self.conn.commit()

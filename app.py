@@ -22,6 +22,7 @@ def signup():
     username = request.json.get('username')
     password = request.json.get('password')
     if dbcontext.users.insert_user(username, password):
+        dbcontext.save()
         return "Signup successful", 200
     else:
         return "Signup failed due to internal server error", 422
@@ -40,7 +41,7 @@ def login():
         return abort(401)
 
 
-@app.route('/addfavorite/', methods=['GET'])
+@app.route('/addfavorite/', methods=['POST'])
 def add_favorite():
     if not auth_handler.is_authenticated_request(request):
         return abort(401, "User not authenticated!")
@@ -50,11 +51,12 @@ def add_favorite():
     username = request.args.get("user", type=str)
 
     if dbcontext.favorites.add_favorite(username, ticker):
+        dbcontext.save()
         return "{} successfully added to favorites".format(ticker)
     return "Failed to add {} to favorites".format(ticker)
 
 
-@app.route('/delfavorite/', methods=['GET'])
+@app.route('/delfavorite/', methods=['DELETE'])
 def remove_favorite():
     if not auth_handler.is_authenticated_request(request):
         return abort(401, "User not authenticated!")
@@ -64,6 +66,7 @@ def remove_favorite():
     username = request.args.get("user", type=str)
 
     if dbcontext.favorites.remove_favorite(username, ticker):
+        dbcontext.save()
         return "{} successfully removed from favorites".format(ticker)
     return "Failed to remove {} from favorites".format(ticker)
 

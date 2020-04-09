@@ -18,7 +18,7 @@ class UsersTable(table.DatabaseTable):
                 Passwd_Salt varchar(16) NOT NULL,
                 PRIMARY KEY (Username));""".format(self.table_name)
         # Execute, commit, and close
-        self.save(query)
+        self.execute(query)
 
     def insert_user(self, username: str, password: str):
         """Attempts to insert a user. Return a True if the user is successfully inserted"""
@@ -30,14 +30,14 @@ class UsersTable(table.DatabaseTable):
             password_hash = tools.encode(password+salt)
             query = "INSERT INTO {} (Username, Passwd_Hash, Passwd_Salt) VALUES ('{}', '{}', '{}');".format(
                 self.table_name, username, password_hash, salt)
-            self.save(query)
+            self.execute(query)
             return True
 
     def delete_user(self, username: str, password: str, favorites_dbo: favorites.FavoritesTable):
         if not self.authenticate_user(username, password):
             return False
         query = "DELETE FROM {} WHERE Username='{}';".format(self.table_name, username)
-        self.save(query)
+        self.execute(query)
         favorites_dbo.remove_all_favorites(username)
         return True
 
@@ -54,7 +54,7 @@ class UsersTable(table.DatabaseTable):
         new_password_hash = tools.encode(new_password+new_salt)
         query = "UPDATE {} SET Passwd_Hash ='{}', Passwd_Salt = '{}' WHERE Username='{}';".format(
             self.table_name, new_password_hash, new_salt, username)
-        self.save(query)
+        self.execute(query)
         return True
 
     def get_all_users(self):

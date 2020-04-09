@@ -16,7 +16,7 @@ class AuthTokenTable(table.DatabaseTable):
                 DateTime varchar(255) NOT NULL,
                 PRIMARY KEY(Username))""".format(self.table_name)
         # Execute, commit, and close
-        self.save(query)
+        self.execute(query)
 
     def add_token(self, username, token):
         # Add auth token to database
@@ -25,7 +25,7 @@ class AuthTokenTable(table.DatabaseTable):
         # Check query for SQL injection
         if self.sanitize(query):
             # Insert token
-            self.save(query)
+            self.execute(query)
             return True
         return False
 
@@ -35,7 +35,7 @@ class AuthTokenTable(table.DatabaseTable):
             # Remove token from database after set amount of time
             query = """DELETE FROM {} WHERE Username='{}'""".format(self.table_name, username)
             # Commit change to database 
-            self.save(query)
+            self.execute(query)
             return True
         return False
 
@@ -49,7 +49,7 @@ class AuthTokenTable(table.DatabaseTable):
                 # Update time stamp in token database
                 update_query = """UPDATE {} SET DateTime='{}' WHERE Username='{}'""".format(self.table_name, self.format_date(), username)
                 # Save to database
-                self.save(update_query)
+                self.execute(update_query)
                 return True
             else:
                 # User is not authenticated: send back to login

@@ -1,51 +1,47 @@
-from database_objects import tools
 from database_objects import table
 
 
 class FavoritesTable(table.DatabaseTable):
     def __init__(self, cursor=None, connection=None):
         super().__init__(cursor, connection)
+        self.table_name = "favorites"
 
-    def create_fav_table(self):
+    def create_table(self):
         # Create user table
-        query = """CREATE TABLE favorites (
+        query = """CREATE TABLE {} (
                     Username varchar(255) NOT NULL,
                     Ticker varchar(10),
-                    PRIMARY KEY(Username, Ticker));"""
+                    PRIMARY KEY(Username, Ticker));""".format(self.table_name)
         # Execute, commit, and close
-        tools.save(query, self.db_cursor, self.db_connection, close=True)
-
-    def remove_table(self):
-        self.db_cursor.execute('DROP TABLE IF EXISTS favorites;')
+        self.execute(query)
 
     def add_favorite(self, username: str, favorite: str):
         """adds a favorite for the user, returns True if successful else False"""
-        query = "SELECT 1 FROM favorites WHERE Username='{}' AND Ticker='{}'".format(
-            username, favorite)
         where = "Username='{}' AND Ticker='{}'".format(username, favorite)
         # Only add favorite if no result is found
-        if tools.select_from(["1"], "favorites", where, self.db_cursor) == []:
-            query = "INSERT INTO favorites (Username, Ticker) VALUES ('{}', '{}')".format(
-                username, favorite)
-            tools.save(query, self.db_cursor, self.db_connection)
+        if self.select_from(["1"], where) == []:
+            query = "INSERT INTO {} (Username, Ticker) VALUES ('{}', '{}')".format(
+                self.table_name, username, favorite)
+            self.execute(query)
             return True
         return False
 
     def remove_favorite(self, username: str, favorite: str):
         """removes a favorite for the user, returns True if successful else False"""
-        query = "DELETE FROM favorites WHERE Username ='{}' AND Ticker='{}';".format(
-            username, favorite)
-        tools.save(query, self.db_cursor, self.db_connection)
+        query = "DELETE FROM {} WHERE Username ='{}' AND Ticker='{}';".format(
+            self.table_name, username, favorite)
+        self.execute(query)
         return True
 
     def remove_all_favorites(self, username: str):
-        query = "DELETE FROM favorites WHERE Username ='{}';".format(username)
-        if tools.sanitize(query):
-            tools.save(query, self.db_cursor, self.db_connection)
+        query = "DELETE FROM {} WHERE Username ='{}';".format(self.table_name, username)
+        if self.sanitize(username):
+            self.execute(query)
         return True
 
     def get_all_favorites(self, username: str):
-        results = tools.select_from(["Ticker"], "favorites", "Username='{}'".format(username))
-        # Results is formatted as [('ticker',),...]. Change to array.
-        formatted_result = [fav[0] for fav in results]
-        return formatted_result
+        # Return all favorites of a user
+        results_2D = self.select_from(["Ticker"], "Username='{}'".format(username))
+        # Switch from 2-D array to 1-D
+        results_1D = [result[0] for result in results_2D]
+        return results_1D

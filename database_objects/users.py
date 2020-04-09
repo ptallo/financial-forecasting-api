@@ -1,8 +1,8 @@
 import random
 import string
-import hashlib
 from database_objects import table
 from database_objects import favorites
+from database_objects import tools
 
 
 class UsersTable(table.DatabaseTable):
@@ -27,7 +27,7 @@ class UsersTable(table.DatabaseTable):
             return False
         else:
             salt = self.create_salt()
-            password_hash = self.encode(password+salt)
+            password_hash = tools.encode(password+salt)
             query = "INSERT INTO {} (Username, Passwd_Hash, Passwd_Salt) VALUES ('{}', '{}', '{}');".format(
                 self.table_name, username, password_hash, salt)
             self.save(query)
@@ -44,14 +44,14 @@ class UsersTable(table.DatabaseTable):
     def authenticate_user(self, username: str, password: str):
         """Attempts to authenticate the user, returns True if the username and password are valid"""
         password_hash, salt = self.get_user_info(username)
-        submitted_password_hash = self.encode(password+salt)
+        submitted_password_hash = tools.encode(password+salt)
         return password_hash == submitted_password_hash
 
     def change_user_password(self, username: str, old_password: str, new_password: str):
         if not self.authenticate_user(username, old_password):
             return False
         new_salt = self.create_salt()
-        new_password_hash = self.encode(new_password+new_salt)
+        new_password_hash = tools.encode(new_password+new_salt)
         query = "UPDATE {} SET Passwd_Hash ='{}', Passwd_Salt = '{}' WHERE Username='{}';".format(
             self.table_name, new_password_hash, new_salt, username)
         self.save(query)
@@ -76,8 +76,4 @@ class UsersTable(table.DatabaseTable):
                     for _ in range(16))
         return salt
 
-    def encode(self, password: str):
-        # Encode user password
-        m = hashlib.sha256()
-        m.update(bytes(password, 'utf8'))
-        return m.hexdigest()
+    

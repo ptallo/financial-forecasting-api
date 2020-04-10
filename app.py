@@ -25,7 +25,7 @@ def signup():
         dbcontext.save()
         return "Signup successful", 200
     else:
-        return "Signup failed due to internal server error", 422
+        return "Signup failed due to internal server error", 500
 
 
 @app.route('/login/', methods=['GET'])
@@ -53,8 +53,8 @@ def add_favorite():
 
     if dbcontext.favorites.add_favorite(username, ticker):
         dbcontext.save()
-        return "{} successfully added to favorites".format(ticker)
-    return "Failed to add {} to favorites".format(ticker)
+        return "{} successfully added to favorites".format(ticker), 200
+    return "Failed to add {} to favorites".format(ticker), 500
 
 
 @app.route('/delfavorite/', methods=['DELETE'])
@@ -68,8 +68,8 @@ def remove_favorite():
 
     if dbcontext.favorites.remove_favorite(username, ticker):
         dbcontext.save()
-        return "{} successfully removed from favorites".format(ticker)
-    return "Failed to remove {} from favorites".format(ticker)
+        return "{} successfully removed from favorites".format(ticker), 200
+    return "Failed to remove {} from favorites".format(ticker), 500
 
 
 @app.route('/getfavorites/', methods=['GET'])

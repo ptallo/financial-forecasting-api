@@ -111,9 +111,6 @@ def respond():
 
 @app.route('/getvalidtickers/', methods=['GET'])
 def get_valid_tickers():
-    if not auth_handler.is_authenticated_request(request):
-        return abort(401, "User not authenticated!")
-
     return jsonify(iex_handler.stock_tickers)
 
 

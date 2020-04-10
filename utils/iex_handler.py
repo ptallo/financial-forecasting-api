@@ -22,3 +22,19 @@ class IEXHandler:
             return 200, response.json()
         return response.status_code, response.text
 
+    def get_valid_stock_tickers(self):
+        request_url = "{}/stable/ref-data/symbols?token={}".format(
+            self.base_url,
+            self.api_key
+        )
+
+        response = requests.get(request_url)
+
+        stock_info = []
+        if response.ok:
+            for data in response.json():
+                stock_info.append((data["symbol"], data["name"]))
+            return 200, stock_info
+        else:
+            return response.status_code, response.text
+

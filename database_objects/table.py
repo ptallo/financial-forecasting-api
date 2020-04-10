@@ -51,11 +51,12 @@ class DatabaseTable:
                 return False
         return True
 
-    def execute(self, query: str):
+    def execute(self, query: str, return_rows=True):
         # Execute query and return rows
         self.cur.execute(query)
-        rows = self.cur.fetchall()
-        return rows
+        if return_rows:
+            rows = self.cur.fetchall()
+            return rows
 
     def close(self):
         # Close connections to database

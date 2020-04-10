@@ -18,7 +18,7 @@ def get_conn():
         query = "dbname='{}' user='{}' host='{}' password='{}'".format(
                 dbase_name, user, host, password)
         conn = pg2.connect(query)
-        return conn, conn.cursor()
+        return conn.cursor(), conn
     # TODO Handle connection failure
     except:
         print("Error! Failed to connect")

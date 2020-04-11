@@ -53,7 +53,7 @@ def add_favorite():
 
     if dbcontext.favorites.add_favorite(username, ticker):
         dbcontext.save()
-        return "{} successfully added to favorites".format(ticker), 200
+        return jsonify(dbcontext.favorites.get_all_favorites(username))
     return "Failed to add {} to favorites".format(ticker), 500
 
 
@@ -68,7 +68,7 @@ def remove_favorite():
 
     if dbcontext.favorites.remove_favorite(username, ticker):
         dbcontext.save()
-        return "{} successfully removed from favorites".format(ticker), 200
+        return jsonify(dbcontext.favorites.get_all_favorites(username))
     return "Failed to remove {} from favorites".format(ticker), 500
 
 
@@ -76,12 +76,7 @@ def remove_favorite():
 def get_favorites():
     if not auth_handler.is_authenticated_request(request):
         return abort(401, "User not authenticated!")
-
-    username = auth_handler.get_user(request)
-
-    favorites = dbcontext.favorites.get_all_favorites(username)
-
-    return jsonify(favorites)
+    return jsonify(dbcontext.favorites.get_all_favorites(auth_handler.get_user(request)))
 
 
 @app.route('/getstockinfo/', methods=['GET'])
@@ -91,17 +86,18 @@ def respond():
 
     # Retrieve the name from url parameter
     ticker = request.args.get("stock", type=str)
-    date_range = request.args.get("date_range", type=str)
+    date_range = request.args.get("daterange", type=str)
 
     # Grab data from stock (ticker) from last end_date-start_date days
     data = {}
-    
-    iex_status_code, iex_return_data = iex_handler.get_historical_data(ticker, date_range)
+
+    iex_status_code, iex_return_data = iex_handler.get_historical_data(
+        ticker, date_range)
     if iex_status_code != 200:
         abort(iex_status_code, iex_return_data)
     else:
         data = iex_return_data
-    
+
     # Extract date keys from historical data
     close_data = [field['close'] for field in data]
     dates = [field['date'] for field in data]

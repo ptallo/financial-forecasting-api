@@ -95,10 +95,13 @@ def respond():
 
     # Grab data from stock (ticker) from last end_date-start_date days
     data = {}
-    try:
-        data = iex_handler.get_historical_data(ticker, date_range)
-    except Exception as e:
-        return abort(400, str(e))
+    
+    iex_status_code, iex_return_data = iex_handler.get_historical_data(ticker, date_range)
+    if iex_status_code != 200:
+        abort(iex_status_code, iex_return_data)
+    else:
+        data = iex_return_data
+    
     # Extract date keys from historical data
     close_data = [field['close'] for field in data]
     dates = [field['date'] for field in data]
@@ -111,7 +114,10 @@ def respond():
 
 @app.route('/getvalidtickers/', methods=['GET'])
 def get_valid_tickers():
-    return jsonify(iex_handler.stock_tickers)
+    iex_status, iex_data = iex_handler.get_valid_stock_tickers()
+    if iex_status == 200:
+        return jsonify(iex_data)
+    return abort(iex_status, iex_data)
 
 
 if __name__ == '__main__':

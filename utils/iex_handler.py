@@ -5,8 +5,6 @@ class IEXHandler:
     def __init__(self):
         self.base_url = "https://sandbox.iexapis.com"
         self.api_key = "Tsk_942768a24d244db38c7a44e32e3bc000"
-        self.stock_tickers = []
-        self.populate_info()
 
     def get_historical_data(self, ticker, date_range):
         if date_range not in ["1y", "6m", "3m", "1m"]:
@@ -18,24 +16,25 @@ class IEXHandler:
             date_range,
             self.api_key
         )
+        
         response = requests.get(request_url)
         if response.ok:
-            return response.json()
-        raise Exception("Bad response from get historical data code: {} reason: {}".format(response.status_code, response.text))
+            return 200, response.json()
+        return response.status_code, response.text
 
-    def populate_info(self):
-        if not self.stock_tickers:
-            request_url = "{}/stable/ref-data/symbols?token={}".format(
-                self.base_url,
-                self.api_key
-            )
+    def get_valid_stock_tickers(self):
+        request_url = "{}/stable/ref-data/symbols?token={}".format(
+            self.base_url,
+            self.api_key
+        )
 
-            response = requests.get(request_url)
+        response = requests.get(request_url)
 
-            if response.ok:
-                for data in response.json():
-                    self.stock_tickers.append((data["symbol"], data["name"]))
-                return
-
-            raise Exception("Bad response from populate stock info data code: {} reason: {}".format(response.status_code, response.text))
+        stock_info = []
+        if response.ok:
+            for data in response.json():
+                stock_info.append((data["symbol"], data["name"]))
+            return 200, stock_info
+        else:
+            return response.status_code, response.text
 

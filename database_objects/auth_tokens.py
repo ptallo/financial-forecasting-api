@@ -20,14 +20,19 @@ class AuthTokenTable(table.DatabaseTable):
 
     def add_token(self, username, token):
         # Add auth token to database
-        query = """INSERT INTO {} (Username, Token, DateTime) VALUES ('{}', '{}', '{}')""".format(
-                        self.table_name, username, token, self.format_date())
+        query = """INSERT INTO {} (Username, Token, DateTime) VALUES ('{}', '{}', '{}') ON CONFLICT (UserName) DO UPDATE SET token = '{}', DateTime = '{}'""".format(
+                        self.table_name, username, token, self.format_date(), token, self.format_date())
         # Check query for SQL injection
         if self.sanitize(query):
             # Insert token
-            self.execute(query)
+            self.execute(query, return_rows=False)
             return True
         return False
+
+    def get_all_tokens(self):
+        query = """SELECT Username, Token FROM auth_tokens"""
+        result = self.execute(query)
+        return result
 
     def remove_token(self, username):
         # Check username for SQL injection

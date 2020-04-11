@@ -40,8 +40,8 @@ class DatabaseTable:
         else:
             return None
 
-
-    def sanitize(self, query: str):
+    @staticmethod
+    def sanitize(query: str):
         # Check for sql injection
         l_query = query.lower().split()
         banned_words = ["drop", "delete", ";"]

@@ -13,9 +13,8 @@ app.secret_key = "USSR_SUPPER_SEKRET_KEZ"
 CORS(app, origins='*')
 
 dbcontext = DatabaseContext()
-auth_handler = AuthHandler()
+auth_handler = AuthHandler(dbcontext)
 iex_handler = IEXHandler()
-
 
 @app.route('/signup/', methods=['POST'])
 def signup():

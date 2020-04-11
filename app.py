@@ -117,7 +117,7 @@ def get_valid_tickers():
     iex_status, iex_data = iex_handler.get_valid_stock_tickers()
     if iex_status == 200:
         return jsonify(iex_data)
-    return iex_status, iex_data
+    return abort(iex_status, iex_data)
 
 
 if __name__ == '__main__':

@@ -10,7 +10,6 @@ class AuthHandler:
         self.init_tokens()
 
     def init_tokens(self):
-        self.remove_timed_out_tokens()
         tokens = self.context.auth_tokens.get_all_tokens()
         for user, token in tokens:
             self.add_auth_token(user, token)
@@ -37,17 +36,7 @@ class AuthHandler:
         return time_user_dict["user"]
 
     def is_token_valid(self, auth_token):
-        self.remove_timed_out_tokens()
         if auth_token in self.auth_tokens.keys():
             self.auth_tokens[auth_token]["time_out"] = dt.now()
             return True
         return False
-
-    def remove_timed_out_tokens(self):
-        tokens_to_remove = []
-        for token, time_user_dict in self.auth_tokens.items():
-            time = time_user_dict["time_out"]
-            if (dt.now() - time).seconds > 1800:
-                tokens_to_remove.append(token)
-        for t in tokens_to_remove:
-            del self.auth_tokens[t]

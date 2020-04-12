@@ -44,25 +44,6 @@ class AuthTokenTable(table.DatabaseTable):
             return True
         return False
 
-    def check_token(self, username, token):
-        # Select token from table to see if valid
-        where = "Username='{}' AND Token='{}'""".format(username, token)
-        # Sanitize
-        if self.sanitize(where):
-            # Check if token is in database still
-            if self.select_from(["1"], where) != []:
-                # Update time stamp in token database
-                update_query = """UPDATE {} SET DateTime='{}' WHERE Username='{}'""".format(self.table_name, self.format_date(), username)
-                # Save to database
-                self.execute(update_query)
-                return True
-            else:
-                # User is not authenticated: send back to login
-                return False
-        else:
-            # SQL injection detected: kick user out
-            return False
-
     def cleanup_tokens(self):
         """ Function to clean up user tokens that have expired """
         # Grab current time

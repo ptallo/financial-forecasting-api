@@ -51,14 +51,24 @@ def test_add_remove_favorite(user_dbo: users.UsersTable, favorites_dbo: favorite
     if not user_dbo.insert_user(testuser_info.get("username"), testuser_info.get("passwordChange")):
         raise Exception('test not set up properly')
 
+    # Add favorite 1
     assertEqual(favorites_dbo.add_favorite(testuser_info.get(
         'username'), testuser_info.get('favorite')), True)
+
+    # Add favorite 2
+    assertEqual(favorites_dbo.add_favorite(testuser_info.get(
+        'username'), testuser_info.get('favoriteTwo')), True)
 
     assertEqual(favorites_dbo.get_all_favorites(testuser_info.get(
         'username')), [testuser_info.get('favorite'), testuser_info.get('favoriteTwo')])
 
+    # Remove favorite 1
     assertEqual(favorites_dbo.remove_favorite(testuser_info.get(
         'username'), testuser_info.get('favorite')), True)
+
+    # Remove favorite 2
+    assertEqual(favorites_dbo.remove_favorite(testuser_info.get(
+        'username'), testuser_info.get('favoriteTwo')), True)
 
     if not user_dbo.delete_user(testuser_info.get("username"), testuser_info.get("passwordChange"), favorites_dbo):
         raise Exception('test not cleaned up properly')
@@ -82,8 +92,8 @@ def test_remove_all_favorites(user_dbo: users.UsersTable, favorites_dbo: favorit
         raise Exception('test not cleaned up properly')
 
 
-def run_user_dbo_tests(cur, conn):
-    user_dbo = users.UsersTable(cur, conn)
+def run_user_dbo_tests():
+    user_dbo = users.UsersTable()
     user_dbo_tests = [
         test_insert_delete_user,
         test_duplicate_insert_user,

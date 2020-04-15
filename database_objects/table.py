@@ -4,7 +4,7 @@ from database_objects import tools
 class DatabaseTable:
     def __init__(self, cursor=None, connection=None):
         if cursor is None or connection is None:
-            self.conn, self.cur = tools.get_conn()
+            self.cur, self.conn = tools.get_conn()
         else:
             self.cur = cursor
             self.conn = connection

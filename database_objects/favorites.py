@@ -22,7 +22,7 @@ class FavoritesTable(table.DatabaseTable):
         if self.select_from(["1"], where) == []:
             query = "INSERT INTO {} (Username, Ticker) VALUES ('{}', '{}')".format(
                 self.table_name, username, favorite)
-            self.execute(query, return_rows=False)
+            self.execute(query)
             return True
         return False
 
@@ -30,13 +30,13 @@ class FavoritesTable(table.DatabaseTable):
         """removes a favorite for the user, returns True if successful else False"""
         query = "DELETE FROM {} WHERE Username ='{}' AND Ticker='{}';".format(
             self.table_name, username, favorite)
-        self.execute(query, return_rows=False)
+        self.execute(query)
         return True
 
     def remove_all_favorites(self, username: str):
         query = "DELETE FROM {} WHERE Username ='{}';".format(self.table_name, username)
         if self.sanitize(username):
-            self.execute(query, return_rows=False)
+            self.execute(query)
         return True
 
     def get_all_favorites(self, username: str):

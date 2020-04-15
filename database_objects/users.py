@@ -17,11 +17,14 @@ class UsersTable(table.DatabaseTable):
                 Passwd_Hash varchar(255) NOT NULL,
                 Passwd_Salt varchar(16) NOT NULL,
                 PRIMARY KEY (Username));""".format(self.table_name)
-        # Execute, commit, and close
+        # Execute and commit
         self.execute(query)
 
     def insert_user(self, username: str, password: str):
         """Attempts to insert a user. Return a True if the user is successfully inserted"""
+        # Sanitize username. If dangerous, return and tell user to pick new name
+        if not self.sanitize(username):
+            return False
         where = "Username='{}'".format(username)
         if self.select_from(["1"], where) != []:
             return False

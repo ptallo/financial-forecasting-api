@@ -15,7 +15,7 @@ class AuthTokenTable(table.DatabaseTable):
                 Token varchar(255) NOT NULL,
                 DateTime varchar(255) NOT NULL,
                 PRIMARY KEY(Username))""".format(self.table_name)
-        # Execute, commit, and close
+        # Execute and commit
         self.execute(query)
 
     def add_token(self, username, token):
@@ -25,13 +25,12 @@ class AuthTokenTable(table.DatabaseTable):
         # Check query for SQL injection
         if self.sanitize(query):
             # Insert token
-            self.execute(query, return_rows=False)
+            self.execute(query)
             return True
         return False
 
     def get_all_tokens(self):
-        query = """SELECT Username, Token FROM auth_tokens"""
-        result = self.execute(query)
+        result = self.select_from(["Username, Token"])
         return result
 
     def remove_token(self, username):

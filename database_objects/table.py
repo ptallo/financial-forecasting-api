@@ -13,7 +13,7 @@ class DatabaseTable:
         raise NotImplementedError()
 
     def remove_table(self):
-        self.cur.execute('DROP TABLE IF EXISTS {};'.format(self.table_name))
+        self.execute('DROP TABLE IF EXISTS {};'.format(self.table_name))
 
     def select_from(self, fields: list, conditions: str = None):
         ''' Returns 2-D array of query results '''
@@ -31,7 +31,7 @@ class DatabaseTable:
 
         # Execute query
         if self.sanitize(query):
-            results = self.execute(query)
+            results = self.execute(query, True)
             # Change output to array format
             formatted_results = []
             for entry in results:
@@ -42,6 +42,7 @@ class DatabaseTable:
 
     @staticmethod
     def sanitize(query: str):
+        """ Returns False if query is dangerous """
         # Check for sql injection
         l_query = query.lower().split()
         banned_words = ["drop", "delete", ";"]
@@ -51,7 +52,7 @@ class DatabaseTable:
                 return False
         return True
 
-    def execute(self, query: str, return_rows=True):
+    def execute(self, query: str, return_rows=False):
         # Execute query and return rows
         self.cur.execute(query)
         if return_rows:

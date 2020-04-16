@@ -114,10 +114,11 @@ def get_stock_info():
     univar = GetPrediction(close_data, GetTrainedModel("models/trained/trained_model"), 30)
     prediction = {"x": [get_str_days_from_now(i) for i in range(len(univar))], "y": univar, "name": "univar"}
 
-
+    company_name = iex_handler.get_company_name(ticker)
+    response = {"ticker": ticker,  "name": company_name, "data": [actual, prediction]}
 
     # Return the response in json format
-    return jsonify({}[actual, prediction])
+    return jsonify(response)
 
 
 def get_str_days_from_now(i):

@@ -47,3 +47,17 @@ class IEXHandler:
         else:
             return response.status_code, response.text
 
+    def get_company_name(self, ticker: str):
+        request_url = "{}/stable/stock/{}/company/?token={}".format(
+            self.base_url,
+            ticker,
+            self.api_key
+        )
+        response = requests.get(request_url)
+        if response.ok:
+            return response.json()["companyName"]
+        else:
+            return response.status_code, response.text
+
+
+

@@ -34,18 +34,6 @@ def univariate_data(dataset, start_index, end_index, history_size, target_size):
     return np.array(data), np.array(labels)
 
 
-def getData(location):
-    # Get the data into pandas df
-    # data = pd.read_csv(location)
-
-    # Univariate data for close indexed on data -> numpy array
-    uni_data = data.iloc[:, 5]
-    uni_data.index = data['Date']
-    uni_data = uni_data.values
-
-    return uni_data
-
-
 def normalizeData(TRAIN, uni_data):
     # Getting training data metrics
     uni_train_min = np.amin(uni_data[:TRAIN])
@@ -182,7 +170,6 @@ def GetPrediction(dataset, model, forecast):
     if forecast > 30:
         forecast = 30
 
-    # data = getData(dataset)
     # plt.plot(data)
     hdata, nmin, nmax = normalizeData(len(dataset), dataset)
     hdata = hdata[-30:]
@@ -190,7 +177,7 @@ def GetPrediction(dataset, model, forecast):
 
     # p_y = x_val_uni[-1]
     p_ya = np.array([])
-    p_x = np.arange(len(data), len(data) + forecast)
+    p_x = np.arange(len(dataset), len(dataset) + forecast)
 
     for x in range(0, forecast):
         hdata = hdata.reshape(1, 30, 1)
@@ -201,16 +188,16 @@ def GetPrediction(dataset, model, forecast):
         p_ya = np.append(p_ya, y_hat)
 
     p_ya = p_ya * nmax + nmin
-    diffy = data[-1] - p_ya[0]
+    diffy = dataset[-1] - p_ya[0]
     p_ya = p_ya + diffy
     # plt.plot(p_x, p_ya)
 
     # plt.show()
 
-    return p_ya
+    return np.ndarray.tolist(p_ya)
 
-def GetTrainedModel():
-    t_m = LoadModel('trained/trained_model')
+def GetTrainedModel(path: str):
+    t_m = LoadModel(path)
     return t_m
 
 # GetPrediction('../data/AAPL.csv', t_m, 20)

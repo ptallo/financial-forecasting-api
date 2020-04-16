@@ -3,10 +3,10 @@ from flask import Flask, request, jsonify, flash, abort
 from flask_cors import *
 
 import base64
-import os
 from database_objects.dbcontext import DatabaseContext
 from utils.auth_handler import AuthHandler
 from utils.iex_handler import IEXHandler
+from models.univarmodel import GetPrediction, GetTrainedModel
 
 
 app = Flask(__name__)
@@ -103,10 +103,13 @@ def get_stock_info():
     close_data = [field['close'] for field in data]
     dates = [field['date'] for field in data]
     # Put Dates and Close values into response
-    response = {"x": dates, "y": close_data, "name": "actual"}
+    actual = {"x": dates, "y": close_data, "name": "actual"}
+
+    univar = GetPrediction(close_data, GetTrainedModel("models/trained/trained_model"), 30)
+    prediction = {"x": dates, "y": univar, "name": "univar"}
 
     # Return the response in json format
-    return jsonify(response)
+    return jsonify([actual, prediction])
 
 
 @app.route('/getvalidtickers/', methods=['GET'])

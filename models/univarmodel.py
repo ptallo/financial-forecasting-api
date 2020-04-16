@@ -36,7 +36,7 @@ def univariate_data(dataset, start_index, end_index, history_size, target_size):
 
 def getData(location):
     # Get the data into pandas df
-    data = pd.read_csv(location)
+    # data = pd.read_csv(location)
 
     # Univariate data for close indexed on data -> numpy array
     uni_data = data.iloc[:, 5]
@@ -182,9 +182,9 @@ def GetPrediction(dataset, model, forecast):
     if forecast > 30:
         forecast = 30
 
-    data = getData(dataset)
+    # data = getData(dataset)
     # plt.plot(data)
-    hdata, nmin, nmax = normalizeData(len(data), data)
+    hdata, nmin, nmax = normalizeData(len(dataset), dataset)
     hdata = hdata[-30:]
     # hdata = data.reshape(1, 30, 1)
 
@@ -209,8 +209,10 @@ def GetPrediction(dataset, model, forecast):
 
     return p_ya
 
+def GetTrainedModel():
+    t_m = LoadModel('trained/trained_model')
+    return t_m
 
-# t_m = LoadModel('trained/trained_model')
 # GetPrediction('../data/AAPL.csv', t_m, 20)
 
 

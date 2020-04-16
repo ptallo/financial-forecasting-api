@@ -55,8 +55,8 @@ coverage.xml
 *.mo
 *.pot
 
-# Data CSV folder
-models/data/
+# Data CSV foldeer
+data/
 
 # Django stuff:
 *.log

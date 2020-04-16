@@ -55,7 +55,7 @@ def add_favorite():
 
     if dbcontext.favorites.add_favorite(username, ticker):
         dbcontext.save()
-        return jsonify(dbcontext.favorites.get_all_favorites(username))
+        return jsonify(dbcontext.favorites.get_favorites(username))
     return "Failed to add {} to favorites".format(ticker), 500
 
 
@@ -70,7 +70,7 @@ def remove_favorite():
 
     if dbcontext.favorites.remove_favorite(username, ticker):
         dbcontext.save()
-        return jsonify(dbcontext.favorites.get_all_favorites(username))
+        return jsonify(dbcontext.favorites.get_favorites(username))
     return "Failed to remove {} from favorites".format(ticker), 500
 
 
@@ -78,7 +78,7 @@ def remove_favorite():
 def get_favorites():
     if not auth_handler.is_authenticated_request(request):
         return abort(401, "User not authenticated!")
-    return jsonify(dbcontext.favorites.get_all_favorites(auth_handler.get_user(request)))
+    return jsonify(dbcontext.favorites.get_favorites(auth_handler.get_user(request)))
 
 
 @app.route('/getstockinfo/', methods=['GET'])

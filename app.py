@@ -114,8 +114,10 @@ def get_stock_info():
     univar = GetPrediction(close_data, GetTrainedModel("models/trained/trained_model"), 30)
     prediction = {"x": [get_str_days_from_now(i) for i in range(len(univar))], "y": univar, "name": "univar"}
 
+
+
     # Return the response in json format
-    return jsonify([actual, prediction])
+    return jsonify({}[actual, prediction])
 
 
 def get_str_days_from_now(i):
@@ -129,6 +131,20 @@ def get_valid_tickers():
     if iex_status == 200:
         return jsonify(iex_data)
     return abort(iex_status, iex_data)
+
+
+@app.route('/refreshtoken/', methods=['GET'])
+def refresh_token():
+    _, auth_token = request.headers.get("Authorization").split()
+    username = auth_handler.get_user(request)
+
+    _, db_token, _ = auth_handler.get_auth_token(username)
+
+    if auth_token == db_token:
+        auth_handler.gen_new_token(username)
+        _, new_token, _ = auth_handler.get_auth_token(username)
+        response_dict = {"token": new_token}
+        return jsonify(response_dict)
 
 
 if __name__ == '__main__':

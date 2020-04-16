@@ -7,14 +7,15 @@ from database_objects import tools, dbcontext
 class AuthHandler:
     def __init__(self, context: dbcontext.DatabaseContext, timeout_length=1800):
         self.context = context
-        self.timout_length = timeout_length
+        self.timeout_length = timeout_length
 
     def get_auth_token(self, username):
         # check if token is still valid, if so return that token
         if self.context.auth_tokens.get_row_for_username(username):
-            username, token, timeout = self.context.auth_tokens.get_row_for_username(username)
+            _, token, _ = self.context.auth_tokens.get_row_for_username(username)
             if not self.is_token_timedout(token):
                 return self.context.auth_tokens.get_row_for_username(username)
+
         # else return newly updated token
         self.gen_new_token(username)
         return self.context.auth_tokens.get_row_for_username(username)
@@ -22,8 +23,7 @@ class AuthHandler:
     def gen_new_token(self, username):
         token = tools.encode('{}{}{}'.format(
             username, dt.now().strftime("%m%d%Y%H%M%S"), random.randint(0, 10000)))
-        self.context.auth_tokens.insert_token(
-            username, token)
+        self.context.auth_tokens.insert_token(username, token)
         self.context.save()
 
     def is_token_timedout(self, token):

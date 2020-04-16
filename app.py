@@ -17,6 +17,7 @@ dbcontext = DatabaseContext()
 auth_handler = AuthHandler(dbcontext)
 iex_handler = IEXHandler()
 
+
 @app.route('/signup/', methods=['POST'])
 def signup():
     username = request.json.get('username')
@@ -34,9 +35,8 @@ def login():
     auth_header_str = base64.b64decode(auth_header).decode('utf-8')
     username, password = auth_header_str.split(":")
     if dbcontext.users.authenticate_user(username, password):
-        token, time_user_dict = auth_handler.get_auth_token(username)
-        time = time_user_dict["time_out"]
-        response_dict = {"token": token, "time": time}
+        _, token, time = auth_handler.get_auth_token(username)
+        response_dict = {"token": token}
         return jsonify(response_dict)
     else:
         return abort(401)

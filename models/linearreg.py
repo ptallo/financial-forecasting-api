@@ -11,8 +11,8 @@ import pandas as pd
 import matplotlib.pyplot as plt
 
 
-def getData(location):
-    data = pd.read_csv(location)
+def getData(data):
+    # data = pd.read_csv(location)
     x = np.arange(0, len(data)).reshape(-1, 1)
     y = data.iloc[:, 5].values.reshape(-1, 1)
     return x, y

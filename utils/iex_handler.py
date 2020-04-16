@@ -16,10 +16,10 @@ class IEXHandler:
             raise Exception("Environment Variable IEX_USE_SANDBOX not set please set it to 0 or 1.")
 
     def get_historical_data(self, ticker, date_range):
-        if date_range not in ["1y", "6m", "3m", "1m"]:
-            date_range = "1m"
+        if date_range not in ["1y", "6m", "3m"]:
+            date_range = "3m"
 
-        request_url = "{}/stable/stock/{}/chart/{}?token={}".format(
+        request_url = "{}/stable/stock/{}/chart/{}/?token={}".format(
             self.base_url,
             ticker,
             date_range,

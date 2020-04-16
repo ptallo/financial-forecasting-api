@@ -24,6 +24,7 @@ def signup():
     password = request.json.get('password')
     if dbcontext.users.insert_user(username, password):
         dbcontext.save()
+        print(dbcontext.users.get_all_users())
         return "Signup successful", 200
     else:
         return "Signup failed due to internal server error", 500

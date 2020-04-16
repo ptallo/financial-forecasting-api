@@ -11,8 +11,10 @@ class AuthHandler:
 
     def get_auth_token(self, username):
         # check if token is still valid, if so return that token
-        if self.context.auth_tokens.get_row_for_username(username) and not self.is_token_timedout():
-            return self.context.auth_tokens.get_row_for_username(username)
+        if self.context.auth_tokens.get_row_for_username(username):
+            username, token, timeout = self.context.auth_tokens.get_row_for_username(username)
+            if not self.is_token_timedout(token):
+                return self.context.auth_tokens.get_row_for_username(username)
         # else return newly updated token
         self.gen_new_token(username)
         return self.context.auth_tokens.get_row_for_username(username)
@@ -32,7 +34,14 @@ class AuthHandler:
 
     def is_authenticated_request(self, request):
         auth_type, auth_token = request.headers.get("Authorization").split()
-        return auth_type == "Bearer" and self.is_token_valid(auth_token) and not self.is_token_timedout(auth_token)
+        if auth_type != "Bearer":
+            print('b')
+            return False
+        elif not self.is_token_valid(auth_token):
+            print('c')
+            return False
+        print('d')
+        return not self.is_token_timedout(auth_token)
 
     def get_user(self, request):
         _, auth_token = request.headers.get("Authorization").split()

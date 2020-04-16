@@ -39,15 +39,15 @@ class AuthTokenTable(table.DatabaseTable):
         return dt.strptime(dto_str, self.format)
 
     def get_row_for_username(self, username):
-        query = "SELECT * FROM {} WHERE Username='{}'".format(username)
+        query = "SELECT * FROM {} WHERE Username='{}'".format(self.table_name, username)
         rows = self.execute_and_return_rows(query)
         if len(rows) != 1:
             return 0
         username, token, timeout = rows[0]
-        return username, token,
+        return username, token, self.str_to_dto(timeout)
 
     def get_row_for_token(self, token):
-        query = "SELECT * FROM {} WHERE Token='{}'".format(token)
+        query = "SELECT * FROM {} WHERE Token='{}'".format(self.table_name, token)
         rows = self.execute_and_return_rows(query)
         if len(rows) != 1:
             return 0
@@ -55,13 +55,10 @@ class AuthTokenTable(table.DatabaseTable):
         return username, token, self.str_to_dto(timeout)
 
     def is_token_timedout(self, token, timeout=1800):
-        query = "SELECT * FROM {} WHERE Token='{}'".format(token)
-        rows = self.execute_and_return_rows(query)
-        username, token, init_time = rows[0]
-        init_time = self.str_to_dto(init_time)
-        return init_time + timedelta(seconds=timeout) > dt.now()
+        username, token, init_time = self.get_row_for_token(token)
+        return init_time + timedelta(seconds=timeout) < dt.now()
 
     def get_all_tokens(self):
-        query = "SELECT * FROM {}"
+        query = "SELECT * FROM {}".format(self.table_name)
         tokens = self.execute_and_return_rows(query)
         return [t[1] for t in tokens]

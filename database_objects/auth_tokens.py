@@ -1,15 +1,16 @@
 from database_objects import table
 
-from datetime import datetime as dt
+from datetime import datetime as dt, timedelta
 
 
 class AuthTokenTable(table.DatabaseTable):
     def __init__(self, cursor=None, connection=None):
         super().__init__(cursor, connection)
         self.table_name = "auth_tokens"
+        self.format = "%m-%d-%Y-%H-%M-%S"
 
     def create_table(self):
-        # Create auth token table 
+        # Create auth token table
         query = """CREATE TABLE {} (
                 Username varchar(255) NOT NULL,
                 Token varchar(255) NOT NULL,
@@ -18,51 +19,46 @@ class AuthTokenTable(table.DatabaseTable):
         # Execute and commit
         self.execute(query)
 
-    def add_token(self, username, token):
-        # Add auth token to database
-        query = """INSERT INTO {} (Username, Token, DateTime) VALUES ('{}', '{}', '{}') ON CONFLICT (UserName) DO UPDATE SET token = '{}', DateTime = '{}'""".format(
-                        self.table_name, username, token, self.format_date(), token, self.format_date())
-        # Check query for SQL injection
+    def insert_token(self, username, token):
+        # Check query for SQL injection and insert
+        query = "INSERT INTO {0} (Username, Token, DateTime) VALUES ('{1}', '{2}', '{3}') ON CONFLICT (UserName) DO UPDATE SET token = '{2}', DateTime = '{3}'".format(
+            self.table_name, username, token, self.dto_to_str(dt.now()))
+
         if self.sanitize(query):
-            # Insert token
             self.execute(query)
-            return True
+
+        inserted_token = self.get_row_for_username(username)
+        if inserted_token:
+            return inserted_token == token
         return False
+
+    def dto_to_str(self, dto):
+        return dto.strftime(self.format)
+
+    def str_to_dto(self, dto_str):
+        return dt.strptime(dto_str, self.format)
+
+    def get_row_for_username(self, username):
+        query = "SELECT * FROM {} WHERE Username='{}'".format(self.table_name, username)
+        rows = self.execute_and_return_rows(query)
+        if len(rows) != 1:
+            return 0
+        username, token, timeout = rows[0]
+        return username, token, self.str_to_dto(timeout)
+
+    def get_row_for_token(self, token):
+        query = "SELECT * FROM {} WHERE Token='{}'".format(self.table_name, token)
+        rows = self.execute_and_return_rows(query)
+        if len(rows) != 1:
+            return 0
+        username, token, timeout = rows[0]
+        return username, token, self.str_to_dto(timeout)
+
+    def is_token_timedout(self, token, timeout=1800):
+        username, token, init_time = self.get_row_for_token(token)
+        return init_time + timedelta(seconds=timeout) < dt.now()
 
     def get_all_tokens(self):
-        result = self.select_from(["Username, Token"])
-        return result
-
-    def remove_token(self, username):
-        # Check username for SQL injection
-        if self.sanitize(username):
-            # Remove token from database after set amount of time
-            query = """DELETE FROM {} WHERE Username='{}'""".format(self.table_name, username)
-            # Commit change to database 
-            self.execute(query)
-            return True
-        return False
-
-    def cleanup_tokens(self):
-        """ Function to clean up user tokens that have expired """
-        # Grab current time
-        cur_time = self.format_date()
-        # Grab all usernames
-        results_2D = self.select_from(["Username"])
-        results = [result[0] for result in results_2D]
-        for user in results:
-            old_time = self.select_from(["DateTime"])[0][0]
-            # Format is YYMMDhhmmss. Expire if older than 30 minutes
-            if int(cur_time) - int(old_time) >= 3000:
-                self.remove_token(user)
-
-    def format_date(self):
-        # Grab datetime object
-        today = dt.now()
-        # Format MM/DD/YY into YYMMDD
-        MDY = today.strftime("%x").split("/")
-        YMD = MDY[2] + MDY[0] + MDY[1]
-        # Grab time
-        time = today.strftime("%X").replace(":", "")
-        date = YMD + time
-        return date
+        query = "SELECT * FROM {}".format(self.table_name)
+        tokens = self.execute_and_return_rows(query)
+        return [t[1] for t in tokens]

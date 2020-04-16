@@ -3,40 +3,44 @@ import random
 from datetime import datetime as dt
 from database_objects import tools, dbcontext
 
+
 class AuthHandler:
-    def __init__(self, context):
+    def __init__(self, context: dbcontext.DatabaseContext, timeout_length=1800):
         self.context = context
-        self.auth_tokens = {}
-        self.init_tokens()
-
-    def init_tokens(self):
-        tokens = self.context.auth_tokens.get_all_tokens()
-        for user, token in tokens:
-            self.add_auth_token(user, token)
-
-    def add_auth_token(self, username, auth_token):
-        self.auth_tokens[auth_token] = {"time_out": dt.now(), "user": username}
-        self.context.auth_tokens.add_token(username, auth_token)
-        self.context.save()
-        return
+        self.timeout_length = timeout_length
 
     def get_auth_token(self, username):
-        auth_token = tools.encode('{}{}'.format(
-            username, random.randint(0, 20)))
-        self.add_auth_token(username, auth_token)
-        return auth_token, self.auth_tokens.get(auth_token)
+        # check if token is still valid, if so return that token
+        if self.context.auth_tokens.get_row_for_username(username):
+            _, token, _ = self.context.auth_tokens.get_row_for_username(username)
+            if not self.is_token_timedout(token):
+                return self.context.auth_tokens.get_row_for_username(username)
+
+        # else return newly updated token
+        self.gen_new_token(username)
+        return self.context.auth_tokens.get_row_for_username(username)
+
+    def gen_new_token(self, username):
+        token = tools.encode('{}{}{}'.format(
+            username, dt.now().strftime("%m%d%Y%H%M%S"), random.randint(0, 10000)))
+        self.context.auth_tokens.insert_token(username, token)
+        self.context.save()
+
+    def is_token_timedout(self, token):
+        return self.context.auth_tokens.is_token_timedout(token)
+
+    def is_token_valid(self, token):
+        return token in self.context.auth_tokens.get_all_tokens()
 
     def is_authenticated_request(self, request):
         auth_type, auth_token = request.headers.get("Authorization").split()
-        return auth_type == "Bearer" and self.is_token_valid(auth_token)
+        if auth_type != "Bearer":
+            return False
+        elif not self.is_token_valid(auth_token):
+            return False
+        return not self.is_token_timedout(auth_token)
 
     def get_user(self, request):
         _, auth_token = request.headers.get("Authorization").split()
-        time_user_dict = self.auth_tokens[auth_token]
-        return time_user_dict["user"]
-
-    def is_token_valid(self, auth_token):
-        if auth_token in self.auth_tokens.keys():
-            self.auth_tokens[auth_token]["time_out"] = dt.now()
-            return True
-        return False
+        username, token, time = self.context.auth_tokens.get_row_for_token(auth_token)
+        return username

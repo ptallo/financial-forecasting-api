@@ -118,6 +118,15 @@ def test_remove_all_favorites():
     assertEqual(del_all_success, True)
 
 
+def test_add_token():
+    dbc = dbcontext.DatabaseContext()
+
+    dbc.users.insert_user(
+        test_user.get("username"),
+        test_user.get("password"))
+
+    dbc.auth_tokens.insert_token()
+
 def assertEqual(actual, expected):
     if actual != expected:
         raise AssertionError(

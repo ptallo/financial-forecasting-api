@@ -183,7 +183,6 @@ def GetPrediction(dataset, model, forecast):
     if forecast > 30:
         forecast = 30
 
-    # data = getData(dataset)
     # plt.plot(data)
     hdata, nmin, nmax = normalizeData(len(dataset), dataset)
     hdata = hdata[-30:]
@@ -204,14 +203,13 @@ def GetPrediction(dataset, model, forecast):
         p_ya = np.append(p_ya, y_hat)
 
     p_ya = p_ya * nmax + nmin
-
     diffy = dataset[-1] - p_ya[0]
     p_ya = p_ya + diffy
     # plt.plot(p_x, p_ya)
 
     # plt.show()
 
-    return p_ya
+    return np.ndarray.tolist(p_ya)
 
 def Noys(y_hat):
     noys = random_integers(-2, 2)

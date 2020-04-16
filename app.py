@@ -111,7 +111,7 @@ def get_stock_info():
     actual = {"x": dates, "y": close_data, "name": "actual"}
 
     # get predictions
-    univar = GetPrediction(close_data, GetTrainedModel("models/trained/trained_model"), 30)
+    univar = GetPrediction(close_data, GetTrainedModel("models/trained/trained_model"), 7)
     prediction = {"x": [get_str_days_from_now(i) for i in range(len(univar))], "y": univar, "name": "univar"}
 
     company_name = iex_handler.get_company_name(ticker)

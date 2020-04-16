@@ -1,11 +1,4 @@
-from keras.models import Sequential
-from keras.layers import LSTM, Dense, Dropout
-from keras.callbacks import ModelCheckpoint, TensorBoard
-from sklearn.preprocessing import MinMaxScaler
-from sklearn.model_selection import train_test_split
-from sklearn.metrics import accuracy_score
 from sklearn.linear_model import LinearRegression
-from sklearn.svm import SVR
 import numpy as np
 import pandas as pd
 import matplotlib.pyplot as plt

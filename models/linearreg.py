@@ -65,6 +65,6 @@ if __name__ == '__main__':
 
     y = normalizeLRpredict(y, forecast, data_len)
 
-    plotPred(x, y, data_len)
+    # plotPred(x, y, data_len)
 
 

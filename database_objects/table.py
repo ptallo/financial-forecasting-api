@@ -31,7 +31,7 @@ class DatabaseTable:
 
         # Execute query
         if self.sanitize(query):
-            results = self.execute(query, True)
+            results = self.execute_and_return_rows(query)
             # Change output to array format
             formatted_results = []
             for entry in results:
@@ -52,12 +52,13 @@ class DatabaseTable:
                 return False
         return True
 
-    def execute(self, query: str, return_rows=False):
-        # Execute query and return rows
+    def execute(self, query: str):
         self.cur.execute(query)
-        if return_rows:
-            rows = self.cur.fetchall()
-            return rows
+
+    def execute_and_return_rows(self, query: str):
+        self.cur.execute(query)
+        rows = self.cur.fetchall()
+        return rows
 
     def close(self):
         # Close connections to database

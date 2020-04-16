@@ -12,17 +12,16 @@ test_user = {
     "favoriteTwo": "TSLA"
 }
 
-tests = [
-    test_insert_user,
-    test_delete_user,
-    test_change_password,
-    test_add_favorite,
-    test_remove_favorite,
-    test_remove_all_favorites
-]
-
-
 def run_all_db_tests():
+    tests = [
+        test_insert_user,
+        test_delete_user,
+        test_change_password,
+        test_add_favorite,
+        test_remove_favorite,
+        test_remove_all_favorites
+    ]
+
     failed = []
     for test in tests:
         try:

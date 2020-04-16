@@ -2,6 +2,7 @@
 from flask import Flask, request, jsonify, flash, abort
 from flask_cors import *
 
+from datetime import datetime as dt, timedelta
 import base64
 from database_objects.dbcontext import DatabaseContext
 from utils.auth_handler import AuthHandler
@@ -106,10 +107,15 @@ def get_stock_info():
     actual = {"x": dates, "y": close_data, "name": "actual"}
 
     univar = GetPrediction(close_data, GetTrainedModel("models/trained/trained_model"), 30)
-    prediction = {"x": dates, "y": univar, "name": "univar"}
+    prediction = {"x": [get_str_days_from_now(i) for i in range(len(univar))], "y": univar, "name": "univar"}
 
     # Return the response in json format
     return jsonify([actual, prediction])
+
+
+def get_str_days_from_now(i):
+    new_date = dt.now()+timedelta(days=i)
+    return new_date.strftime("%Y-%m-%d")
 
 
 @app.route('/getvalidtickers/', methods=['GET'])

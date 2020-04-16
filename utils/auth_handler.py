@@ -35,12 +35,9 @@ class AuthHandler:
     def is_authenticated_request(self, request):
         auth_type, auth_token = request.headers.get("Authorization").split()
         if auth_type != "Bearer":
-            print('b')
             return False
         elif not self.is_token_valid(auth_token):
-            print('c')
             return False
-        print('d')
         return not self.is_token_timedout(auth_token)
 
     def get_user(self, request):

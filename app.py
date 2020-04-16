@@ -8,6 +8,7 @@ from database_objects.dbcontext import DatabaseContext
 from utils.auth_handler import AuthHandler
 from utils.iex_handler import IEXHandler
 
+
 app = Flask(__name__)
 app.secret_key = "USSR_SUPPER_SEKRET_KEZ"
 CORS(app, origins='*')
@@ -79,7 +80,7 @@ def get_favorites():
 
 
 @app.route('/getstockinfo/', methods=['GET'])
-def respond():
+def get_stock_info():
     if not auth_handler.is_authenticated_request(request):
         return abort(401, "User not authenticated!")
 
@@ -101,7 +102,7 @@ def respond():
     close_data = [field['close'] for field in data]
     dates = [field['date'] for field in data]
     # Put Dates and Close values into response
-    response = {"x": dates, "y": [close_data], "names": ["actual"]}
+    response = {"x": dates, "y": close_data, "name": "actual"}
 
     # Return the response in json format
     return jsonify(response)

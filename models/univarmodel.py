@@ -15,6 +15,17 @@ mpl.rcParams['axes.grid'] = False
 # Enable eager for easy to use TF
 #tf.enable_eager_execution()
 
+def getData(location):
+    # Get the data into pandas df
+    data = pd.read_csv(location)
+
+    # Univariate data for close indexed on data -> numpy array
+    uni_data = data.iloc[:, 5]
+    uni_data.index = data['Date']
+    uni_data = uni_data.values
+
+    return uni_data
+
 
 def univariate_data(dataset, start_index, end_index, history_size, target_size):
     data = []
@@ -225,8 +236,8 @@ def Noys(y_hat):
             y_hat = y_hat - y_hat*0.15
 
     return y_hat
-def GetTrainedModel():
-    t_m = LoadModel('trained/trained_model')
+def GetTrainedModel(path: str):
+    t_m = LoadModel(path)
     return t_m
 
 # GetPrediction('../data/AAPL.csv', t_m, 20)
@@ -234,7 +245,7 @@ def GetTrainedModel():
 
 def TrainSet():
     model = CreateModel((30, 1))
-    for filename in os.listdir('../data'):
+    for filename in os.listdir("/Users/christopherochs/financial-forecasting-api/models/data"):
         if filename.endswith(".csv"):
             print('../data/' + filename)
             train, val, t_shape = PrepTrainData('../data/' + filename)

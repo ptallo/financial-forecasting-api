@@ -4,6 +4,7 @@ from flask_cors import *
 
 from datetime import datetime as dt, timedelta
 import base64
+import os.path
 from database_objects.dbcontext import DatabaseContext
 from utils.auth_handler import AuthHandler
 from utils.iex_handler import IEXHandler
@@ -25,7 +26,6 @@ def signup():
     password = request.json.get('password')
     if dbcontext.users.insert_user(username, password):
         dbcontext.save()
-        print(dbcontext.users.get_all_users())
         return "Signup successful", 200
     else:
         return "Signup failed due to internal server error", 500
@@ -110,8 +110,11 @@ def get_stock_info():
 
     actual = {"x": dates, "y": close_data, "name": "actual"}
 
-    # get predictions
-    univar = GetPrediction(close_data, GetTrainedModel("models/trained/{}_saved_model.pb".format(ticker)), 7)
+    model_path = "models/trained/{}.csv".format(ticker)
+    if not os.path.exists(model_path):
+        model_path = "models/trained/AAPL.csv"
+
+    univar = GetPrediction(close_data, GetTrainedModel(model_path), 7)
     prediction = {"x": [get_str_days_from_now(i) for i in range(len(univar))], "y": univar, "name": "univar"}
 
     company_name = iex_handler.get_company_name(ticker)

@@ -3,6 +3,7 @@ import tensorflow as tf
 import matplotlib as mpl
 import matplotlib.pyplot as plt
 import numpy as np
+from numpy.random import random_integers
 import os
 import pandas as pd
 from math import floor
@@ -32,6 +33,18 @@ def univariate_data(dataset, start_index, end_index, history_size, target_size):
         # Labels = the day to predict in question - y data
         labels.append(dataset[i + target_size])
     return np.array(data), np.array(labels)
+
+
+def getData(location):
+    # Get the data into pandas df
+    data = pd.read_csv(location)
+
+    # Univariate data for close indexed on data -> numpy array
+    uni_data = data.iloc[:, 5]
+    uni_data.index = data['Date']
+    uni_data = uni_data.values
+
+    return uni_data
 
 
 def normalizeData(TRAIN, uni_data):
@@ -148,15 +161,15 @@ def PrepTrainData(location):
 
 
 #### 3
-def TrainModel(model, train_univariate, val_univariate):
+def TrainModel(model, train_univariate, val_univariate, filename):
     EVALUATION_INTERVAL = 200
-    EPOCHS = 100
+    EPOCHS = 50
     model.fit(train_univariate, epochs=EPOCHS,
               steps_per_epoch=EVALUATION_INTERVAL,
               validation_steps=50,
               validation_data=val_univariate)
 
-    model.save("trained/trained_model")
+    model.save("trained/trained_model"+filename)
 
     return model
 
@@ -173,15 +186,17 @@ def GetPrediction(dataset, model, forecast):
     # plt.plot(data)
     hdata, nmin, nmax = normalizeData(len(dataset), dataset)
     hdata = hdata[-30:]
-    # hdata = data.reshape(1, 30, 1)
 
-    # p_y = x_val_uni[-1]
     p_ya = np.array([])
     p_x = np.arange(len(dataset), len(dataset) + forecast)
 
     for x in range(0, forecast):
         hdata = hdata.reshape(1, 30, 1)
         y_hat = model.predict(hdata)
+        
+        y_hat = Noys(y_hat)
+        # if abs(y_hat - p_ya[-1]) > 0.5*y_hat:
+        #     y_hat = y_hat/5
 
         hdata = np.append(hdata, y_hat)
         hdata = np.delete(hdata, 0)
@@ -196,8 +211,22 @@ def GetPrediction(dataset, model, forecast):
 
     return np.ndarray.tolist(p_ya)
 
-def GetTrainedModel(path: str):
-    t_m = LoadModel(path)
+def Noys(y_hat):
+    noys = random_integers(-2, 2)
+    if noys % 2 == 0:
+        if noys > 1:
+            y_hat = y_hat + y_hat*0.30
+        elif noys < 1:
+            y_hat = y_hat - y_hat*0.30
+    else:
+        if noys > 1:
+            y_hat = y_hat + y_hat*0.15
+        elif noys < 1:
+            y_hat = y_hat - y_hat*0.15
+
+    return y_hat
+def GetTrainedModel():
+    t_m = LoadModel('trained/trained_model')
     return t_m
 
 # GetPrediction('../data/AAPL.csv', t_m, 20)
@@ -209,4 +238,17 @@ def TrainSet():
         if filename.endswith(".csv"):
             print('../data/' + filename)
             train, val, t_shape = PrepTrainData('../data/' + filename)
-            model = TrainModel(model, train, val)
+            model = TrainModel(model, train, val, filename)
+
+
+def TestModels(filename, dataname):
+        model = LoadModel('trained/'+filename)
+        d = getData('../data/' + dataname)
+        d = d[-100:]
+        p_x = np.arange(len(d), len(d) + 5)
+        y = GetPrediction(d, model, 5)
+        plt.title(filename + " on " + dataname)
+        plt.plot(d)
+        plt.plot(p_x, y)
+        plt.show()
+        
